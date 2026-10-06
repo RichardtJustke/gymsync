@@ -23,8 +23,8 @@ BACKEND_PID=$!
 # Função para encerrar ao sair (Ctrl+C)
 trap "kill $BACKEND_PID 2>/dev/null || true; exit" SIGINT SIGTERM EXIT
 
-# 3. Inicia Frontend Next.js na porta 3000
-echo "🌐 Iniciando Frontend Next.js na porta 3000..."
+# 3. Inicia Frontend Next.js na porta 3010
+echo "🌐 Iniciando Frontend Next.js na porta 3010..."
 cd "$DIR/frontend"
-npm run dev
+npm run dev -- -p 3010
 
