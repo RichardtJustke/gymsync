@@ -1,0 +1,9 @@
+Nome Completo;CPF / Documento;E-mail;Telefone / WhatsApp;Plano;Mensalidade;Dia Vencimento;Status
+Lucas Gabriel Oliveira;456.789.123-01;lucas.oliveira@email.com;(11) 98765-1122;Plano Mensal;R$ 119,90;10;ATIVO
+Beatriz Santos Souza;789.123.456-02;beatriz.souza@email.com;(11) 97654-2233;Plano Anual;R$ 89,90;15;ATIVO
+Rafael Mendes Costa;321.654.987-03;rafael.costa@email.com;(11) 96543-3344;Trimestral;R$ 99,90;05;INADIMPLENTE
+Juliana Ferreira Lima;654.987.321-04;juliana.lima@email.com;(11) 95432-4455;Semestral;R$ 94,90;20;ATIVO
+Thiago Rocha Silveira;147.258.369-05;thiago.silveira@email.com;(11) 94321-5566;Plano Black;R$ 139,90;10;INADIMPLENTE
+Camila Duarte Barbosa;258.369.147-06;camila.barbosa@email.com;(11) 93210-6677;Plano Mensal;R$ 119,90;25;ATIVO
+Gabriel Henrique Pinto;369.147.258-07;gabriel.pinto@email.com;(11) 92109-7788;Plano Anual;R$ 89,90;10;ATIVO
+Mariana Alcantara Cruz;951.753.852-08;mariana.cruz@email.com;(11) 91098-8899;Plano Mensal;R$ 119,90;05;ATIVO
