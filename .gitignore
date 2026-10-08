@@ -41,3 +41,10 @@ yarn-error.log*
 
 # Docker
 .docker/
+
+# Build/artefatos locais
+/backend/api
+*.db.bak
+*.db-shm
+*.db-wal
+*.tsbuildinfo

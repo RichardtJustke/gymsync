@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Unika GymSync</string>
+    <string name="title_activity_main">Unika GymSync</string>
+    <string name="package_name">app.unika.gymsync</string>
+    <string name="custom_url_scheme">app.unika.gymsync</string>
+</resources>

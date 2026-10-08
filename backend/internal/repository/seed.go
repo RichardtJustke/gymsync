@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"gymsync/backend/internal/config"
 	"gymsync/backend/internal/domain"
 
 	"github.com/google/uuid"
@@ -11,160 +12,148 @@ import (
 	"gorm.io/gorm"
 )
 
-// SeedDatabase popula o banco com dados iniciais e mais de 100 exercícios categorizados
+// Senha das contas de demonstração (somente desenvolvimento, SEED_DEMO=true)
+const demoPassword = "unika2026"
+
+var demoGymID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
+
+// SeedDatabase popula a base global de exercícios e, em desenvolvimento, dados de demonstração da Unika
 func SeedDatabase(db *gorm.DB) error {
 	var count int64
-	db.Model(&domain.Exercise{}).Count(&count)
-	if count > 0 {
-		log.Printf("[SEED] Banco já possui %d exercícios cadastrados. Pulando seed inicial.", count)
+	db.Model(&domain.Exercise{}).Where("gym_id IS NULL").Count(&count)
+	if count == 0 {
+		log.Println("[SEED] Inserindo base global de exercícios...")
+		if err := db.CreateInBatches(getComprehensiveExercises(), 50).Error; err != nil {
+			return err
+		}
+	}
+
+	var gyms int64
+	db.Model(&domain.Gym{}).Count(&gyms)
+	if gyms == 0 {
+		gym := domain.Gym{ID: demoGymID, Name: "Unika Fitness", Document: "00.000.000/0001-00", ThemeHex: "#FF5A1F", BookingWindowDays: 7, CancelDeadlineHours: 2}
+		if err := db.Create(&gym).Error; err != nil {
+			return err
+		}
+		log.Println("[SEED] Academia criada: Unika Fitness")
+	}
+
+	if err := seedWorkoutTemplates(db); err != nil {
+		log.Printf("[AVISO] Falha ao criar modelos de treino padrão: %v", err)
+	}
+
+	if !config.C.SeedDemo {
 		return nil
 	}
+	return seedDemo(db)
+}
 
-	log.Println("[SEED] Populando banco de dados com dados iniciais e ampla base de 110+ exercícios...")
-
-	// 1. Academia Padrão
-	gymID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
-	gym := domain.Gym{
-		ID:       gymID,
-		Name:     "GymSync Prime Fitness",
-		Document: "12.345.678/0001-90",
-		Phone:    "(11) 98765-4321",
-		Email:    "contato@gymsyncprime.com.br",
-		Address:  "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
-		ThemeHex: "#2563eb",
-	}
-	db.FirstOrCreate(&gym, domain.Gym{ID: gymID})
-
-	// 2. Usuários de Demonstração
-	hashPass, _ := bcrypt.GenerateFromPassword([]byte("123456"), bcrypt.DefaultCost)
-
-	// Admin (Gestor)
-	adminID := uuid.MustParse("00000000-0000-0000-0000-000000000010")
-	admin := domain.User{
-		ID:           adminID,
-		GymID:        gymID,
-		Name:         "Carlos Gestor",
-		Email:        "admin@gymsync.com",
-		Document:     "11122233344",
-		Phone:        "(11) 99999-0001",
-		PasswordHash: string(hashPass),
-		Role:         domain.RoleAdmin,
-		FirstAccess:  false,
-	}
-	db.FirstOrCreate(&admin, domain.User{Email: "admin@gymsync.com"})
-
-	// Professor (Personal)
-	profID := uuid.MustParse("00000000-0000-0000-0000-000000000020")
-	prof := domain.User{
-		ID:           profID,
-		GymID:        gymID,
-		Name:         "Lucas Treinador",
-		Email:        "professor@gymsync.com",
-		Document:     "22233344455",
-		Phone:        "(11) 99999-0002",
-		PasswordHash: string(hashPass),
-		Role:         domain.RoleProfessor,
-		FirstAccess:  false,
-	}
-	db.FirstOrCreate(&prof, domain.User{Email: "professor@gymsync.com"})
-
-	// Aluno
-	alunoUserID := uuid.MustParse("00000000-0000-0000-0000-000000000030")
-	alunoUser := domain.User{
-		ID:           alunoUserID,
-		GymID:        gymID,
-		Name:         "Matheus Aluno",
-		Email:        "aluno@gymsync.com",
-		Document:     "33344455566",
-		Phone:        "(11) 99999-0003",
-		PasswordHash: string(hashPass),
-		Role:         domain.RoleAluno,
-		FirstAccess:  false,
-	}
-	db.FirstOrCreate(&alunoUser, domain.User{Email: "aluno@gymsync.com"})
-
-	// Perfil do Aluno
-	studentID := uuid.MustParse("00000000-0000-0000-0000-000000000040")
-	student := domain.Student{
-		ID:        studentID,
-		GymID:     gymID,
-		UserID:    alunoUserID,
-		PlanName:  "Plano Ouro Anual",
-		PlanPrice: 119.90,
-		DueDay:    10,
-		Status:    domain.StatusAtivo,
-		Weight:    78.5,
-		Height:    177.0,
-		Notes:     "Objetivo: Hipertrofia com foco em membros superiores.",
-	}
-	db.FirstOrCreate(&student, domain.Student{ID: studentID})
-
-	// 3. Fatura Pendente (Mock) para teste de pagamento
-	invoiceID := uuid.MustParse("00000000-0000-0000-0000-000000000050")
-	invoice := domain.Invoice{
-		ID:           invoiceID,
-		GymID:        gymID,
-		StudentID:    studentID,
-		Amount:       119.90,
-		DueDate:      time.Now().AddDate(0, 0, 5),
-		Status:       domain.InvoicePendente,
-		BoletoDigits: "34191.79001 01043.510047 91020.150008 5 95680000011990",
-		PixCopyPaste: "00020126580014br.gov.bcb.pix0136gymsync-mock-key-1234-5678-90ab-cdef5204000053039865406119.905802BR5916GYMSYNC FITNESS6009SAO PAULO62070503***6304ABCD",
-		Description:  "Mensalidade - Plano Ouro (Mês Atual)",
-	}
-	db.FirstOrCreate(&invoice, domain.Invoice{ID: invoiceID})
-
-	// 4. Ampla Base de Exercícios (110+ exercícios profissionais)
-	exercises := getComprehensiveExercises()
-	if err := db.CreateInBatches(exercises, 50).Error; err != nil {
-		log.Printf("[SEED] Erro ao inserir exercícios: %v", err)
+func seedDemo(db *gorm.DB) error {
+	var gym domain.Gym
+	if err := db.Order("created_at asc").First(&gym).Error; err != nil {
 		return err
 	}
+	gymID := gym.ID
+	hash, _ := bcrypt.GenerateFromPassword([]byte(demoPassword), bcrypt.DefaultCost)
 
-	// 5. Treino de Exemplo A/B/C para o aluno Matheus
-	planID := uuid.MustParse("00000000-0000-0000-0000-000000000060")
-	plan := domain.WorkoutPlan{
-		ID:        planID,
-		GymID:     gymID,
-		StudentID: studentID,
-		TeacherID: profID,
-		Title:     "Treino ABC - Hipertrofia Padrão",
-		Goal:      "Ganho de massa magra e força",
-		Active:    true,
-		StartDate: time.Now(),
+	user := func(name, email, doc string, role domain.Role) domain.User {
+		u := domain.User{GymID: gymID, Name: name, Email: email, Document: doc, PasswordHash: string(hash), Role: role, FirstAccess: false}
+		db.Where(domain.User{Email: email}).FirstOrCreate(&u)
+		return u
 	}
-	db.FirstOrCreate(&plan, domain.WorkoutPlan{ID: planID})
+	user("Gestão Unika", "admin@unika.app", "", domain.RoleAdmin)
+	prof := user("Camila Professora", "professora@unika.app", "", domain.RoleProfessor)
+	aluna := user("Ana Aluna", "aluna@unika.app", "", domain.RoleAluno)
 
-	// Treino A (Peito, Tríceps e Deltoide Anterior)
-	workoutAID := uuid.MustParse("00000000-0000-0000-0000-000000000071")
-	workoutA := domain.Workout{
-		ID:            workoutAID,
-		WorkoutPlanID: planID,
-		Letter:        "A",
-		Name:          "Peito, Tríceps e Ombro",
-		Description:   "Foco em empurrar (Push Day)",
-		OrderIndex:    1,
+	// Planos
+	var nPlans int64
+	db.Model(&domain.Plan{}).Where("gym_id = ?", gymID).Count(&nPlans)
+	if nPlans == 0 {
+		db.Create(&[]domain.Plan{
+			{GymID: gymID, Name: "Mensal Livre", Price: 189.90, DurationMonths: 1, ClassesPerWeek: 0, Active: true, Description: "Aulas ilimitadas"},
+			{GymID: gymID, Name: "Mensal 3x", Price: 149.90, DurationMonths: 1, ClassesPerWeek: 3, Active: true, Description: "Até 3 aulas por semana"},
+			{GymID: gymID, Name: "Trimestral Livre", Price: 169.90, DurationMonths: 3, ClassesPerWeek: 0, Active: true, Description: "Valor mensal no plano de 3 meses"},
+		})
 	}
-	db.FirstOrCreate(&workoutA, domain.Workout{ID: workoutAID})
+	var plan domain.Plan
+	db.Where("gym_id = ?", gymID).Order("price desc").First(&plan)
 
-	// Busca alguns exercícios inseridos para linkar na ficha A
-	var exSupino, exInclinado, exTricepsCord, exDesenv domain.Exercise
-	db.Where("name = ?", "Supino Reto com Barra").First(&exSupino)
-	db.Where("name = ?", "Supino Inclinado com Halteres").First(&exInclinado)
-	db.Where("name = ?", "Tríceps Pulley com Corda").First(&exTricepsCord)
-	db.Where("name = ?", "Desenvolvimento Militar com Halteres").First(&exDesenv)
-
-	itemsA := []domain.WorkoutExercise{
-		{WorkoutID: workoutAID, ExerciseID: exSupino.ID, Sets: 4, Reps: "8-10", LoadKg: 70, RestSeconds: 90, Notes: "Aquecimento progressivo na primeira série", OrderIndex: 1},
-		{WorkoutID: workoutAID, ExerciseID: exInclinado.ID, Sets: 4, Reps: "10-12", LoadKg: 24, RestSeconds: 60, Notes: "Cadência 3-1", OrderIndex: 2},
-		{WorkoutID: workoutAID, ExerciseID: exDesenv.ID, Sets: 3, Reps: "10-12", LoadKg: 18, RestSeconds: 60, Notes: "Coluna bem apoiada", OrderIndex: 3},
-		{WorkoutID: workoutAID, ExerciseID: exTricepsCord.ID, Sets: 4, Reps: "12-15", LoadKg: 35, RestSeconds: 45, Notes: "Pico de contração de 1s", OrderIndex: 4},
+	// Modalidades e grade semanal
+	var nMods int64
+	db.Model(&domain.Modality{}).Where("gym_id = ?", gymID).Count(&nMods)
+	if nMods == 0 {
+		mods := []domain.Modality{
+			{GymID: gymID, Name: "Pilates", Color: "#C084FC", AllowTrial: true, Active: true},
+			{GymID: gymID, Name: "Funcional", Color: "#FF5A1F", AllowTrial: true, Active: true},
+			{GymID: gymID, Name: "Dança Fit", Color: "#F472B6", AllowTrial: true, Active: true},
+			{GymID: gymID, Name: "Musculação Orientada", Color: "#D7FF3A", AllowTrial: false, Active: true},
+		}
+		db.Create(&mods)
+		pid := prof.ID
+		var schedules []domain.ClassSchedule
+		slots := []struct {
+			mod   int
+			days  []int
+			start string
+			cap   int
+		}{
+			{0, []int{1, 3, 5}, "07:00", 10},
+			{1, []int{1, 2, 3, 4, 5}, "18:30", 20},
+			{2, []int{2, 4}, "19:30", 25},
+			{3, []int{1, 2, 3, 4, 5, 6}, "09:00", 15},
+			{0, []int{6}, "10:00", 10},
+		}
+		for _, sl := range slots {
+			for _, d := range sl.days {
+				schedules = append(schedules, domain.ClassSchedule{
+					GymID: gymID, ModalityID: mods[sl.mod].ID, TeacherID: &pid, Weekday: d, StartTime: sl.start,
+					DurationMin: 60, Capacity: sl.cap, Room: "Sala 1", Active: true,
+				})
+			}
+		}
+		db.Create(&schedules)
 	}
-	for _, it := range itemsA {
-		db.Create(&it)
+
+	// Perfil da aluna demo + ficha
+	var student domain.Student
+	if db.Where("user_id = ?", aluna.ID).First(&student).Error != nil {
+		student = domain.Student{GymID: gymID, UserID: aluna.ID, PlanID: &plan.ID, PlanName: plan.Name, PlanPrice: plan.Price,
+			DueDay: 10, Status: domain.StatusAtivo, Weight: 62, Height: 165}
+		db.Create(&student)
+	}
+	var nWp int64
+	db.Model(&domain.WorkoutPlan{}).Where("student_id = ?", student.ID).Count(&nWp)
+	if nWp == 0 {
+		wp := domain.WorkoutPlan{GymID: gymID, StudentID: student.ID, TeacherID: prof.ID, Title: "Treino AB — Fortalecimento", Goal: "Força e condicionamento", Active: true, StartDate: time.Now()}
+		db.Create(&wp)
+		pick := func(name string) uuid.UUID {
+			var e domain.Exercise
+			db.Where("name = ?", name).First(&e)
+			return e.ID
+		}
+		wa := domain.Workout{WorkoutPlanID: wp.ID, Letter: "A", Name: "Inferiores e Glúteos", OrderIndex: 1}
+		wb := domain.Workout{WorkoutPlanID: wp.ID, Letter: "B", Name: "Superiores e Core", OrderIndex: 2}
+		db.Create(&wa)
+		db.Create(&wb)
+		items := []domain.WorkoutExercise{
+			{WorkoutID: wa.ID, ExerciseID: pick("Agachamento Livre com Barra"), Sets: 4, Reps: "10-12", LoadKg: 20, RestSeconds: 90, OrderIndex: 1},
+			{WorkoutID: wa.ID, ExerciseID: pick("Leg Press 45°"), Sets: 4, Reps: "12", LoadKg: 60, RestSeconds: 60, OrderIndex: 2},
+			{WorkoutID: wa.ID, ExerciseID: pick("Cadeira Extensora"), Sets: 3, Reps: "15", LoadKg: 25, RestSeconds: 45, OrderIndex: 3},
+			{WorkoutID: wb.ID, ExerciseID: pick("Puxada Frontal Aberta"), Sets: 4, Reps: "10-12", LoadKg: 30, RestSeconds: 60, OrderIndex: 1},
+			{WorkoutID: wb.ID, ExerciseID: pick("Supino Reto com Halteres"), Sets: 3, Reps: "12", LoadKg: 8, RestSeconds: 60, OrderIndex: 2},
+			{WorkoutID: wb.ID, ExerciseID: pick("Prancha Abdominal Isométrica"), Sets: 3, Reps: "30s", LoadKg: 0, RestSeconds: 30, OrderIndex: 3},
+		}
+		for _, it := range items {
+			if it.ExerciseID != uuid.Nil {
+				db.Create(&it)
+			}
+		}
 	}
 
-	log.Println("[SEED] Seed executado com sucesso! Usuários criados: admin@gymsync.com, professor@gymsync.com, aluno@gymsync.com (Senha padrão: 123456)")
+	seedAdminDemo(db, gym, string(hash))
+	// GORM troca false por default:true ao criar; as contas de demonstração não devem pedir troca de senha
+	db.Model(&domain.User{}).Where("gym_id = ? AND email LIKE ?", gymID, "%@unika.app").Update("first_access", false)
+	log.Printf("[SEED] Demo pronta: admin@unika.app / professora@unika.app / aluna@unika.app (senha %s)", demoPassword)
 	return nil
 }
 
@@ -305,4 +294,178 @@ func getComprehensiveExercises() []domain.Exercise {
 		{Name: "Box Jump (Salto no Caixote)", MuscleGroup: "Funcional", Equipment: "Caixote Plyo", Description: "Potência e explosão muscular de membros inferiores."},
 	}
 	return list
+}
+
+func seedWorkoutTemplates(db *gorm.DB) error {
+	var count int64
+	db.Model(&domain.WorkoutTemplate{}).Count(&count)
+	if count > 0 {
+		return nil
+	}
+
+	log.Println("[SEED] Inserindo biblioteca de modelos de treino...")
+
+	pick := func(name string) uuid.UUID {
+		var e domain.Exercise
+		db.Where("name = ?", name).First(&e)
+		return e.ID
+	}
+
+	// 1. Adaptação Iniciante (Full Body)
+	t1 := domain.WorkoutTemplate{
+		Title:       "Adaptação Iniciante (Full Body)",
+		Goal:        "Adaptação",
+		Level:       "Iniciante",
+		Description: "Ficha básica de adaptação anatômica e aprendizado motor para novos alunos. Frequência sugerida: 3x na semana em dias alternados.",
+	}
+	if err := db.Create(&t1).Error; err != nil {
+		return err
+	}
+	div1 := domain.WorkoutTemplateDiv{
+		WorkoutTemplateID: t1.ID,
+		Letter:            "A",
+		Name:              "Corpo Inteiro (Full Body)",
+		Description:       "Exercícios compostos básicos e máquinas com apoio guiado.",
+		OrderIndex:        1,
+	}
+	db.Create(&div1)
+	items1 := []domain.WorkoutTemplateItem{
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Leg Press 45°"), Sets: 3, Reps: "12-15", LoadKg: 40, RestSeconds: 60, OrderIndex: 1, Notes: "Ajustar banco para apoiar bem a coluna"},
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Supino Reto com Halteres"), Sets: 3, Reps: "12", LoadKg: 8, RestSeconds: 60, OrderIndex: 2, Notes: "Manter escápulas aduzidas"},
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Puxada Frontal Aberta"), Sets: 3, Reps: "12", LoadKg: 25, RestSeconds: 60, OrderIndex: 3, Notes: "Puxar em direção ao peitoral superior"},
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Cadeira Extensora"), Sets: 3, Reps: "15", LoadKg: 20, RestSeconds: 45, OrderIndex: 4, Notes: "Pausa de 1 segundo no topo"},
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Elevação Lateral com Halteres"), Sets: 3, Reps: "12-15", LoadKg: 4, RestSeconds: 45, OrderIndex: 5, Notes: "Não ultrapassar a linha dos ombros"},
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Tríceps Pulley com Barra Reta"), Sets: 3, Reps: "12", LoadKg: 15, RestSeconds: 45, OrderIndex: 6, Notes: "Cotovelos fixos ao lado do corpo"},
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Rosca Direta com Barra W"), Sets: 3, Reps: "12", LoadKg: 10, RestSeconds: 45, OrderIndex: 7, Notes: "Sem balanço de tronco"},
+		{WorkoutTemplateDivID: div1.ID, ExerciseID: pick("Prancha Abdominal Isométrica"), Sets: 3, Reps: "30s", LoadKg: 0, RestSeconds: 45, OrderIndex: 8, Notes: "Manter abdômen firme e alinhado"},
+	}
+	for _, it := range items1 {
+		if it.ExerciseID != uuid.Nil {
+			db.Create(&it)
+		}
+	}
+
+	// 2. Hipertrofia ABC Clássico
+	t2 := domain.WorkoutTemplate{
+		Title:       "Hipertrofia ABC Clássico (Push / Pull / Legs)",
+		Goal:        "Hipertrofia",
+		Level:       "Intermediário",
+		Description: "A divisão de treino mais comprovada para ganho de massa muscular. Separa empurrar, puxar e membros inferiores.",
+	}
+	db.Create(&t2)
+	div2A := domain.WorkoutTemplateDiv{WorkoutTemplateID: t2.ID, Letter: "A", Name: "Push — Peitoral, Tríceps & Ombros", OrderIndex: 1}
+	div2B := domain.WorkoutTemplateDiv{WorkoutTemplateID: t2.ID, Letter: "B", Name: "Pull — Dorsal, Bíceps & Trapézio", OrderIndex: 2}
+	div2C := domain.WorkoutTemplateDiv{WorkoutTemplateID: t2.ID, Letter: "C", Name: "Legs — Quadríceps, Isquiotibiais & Glúteos", OrderIndex: 3}
+	db.Create(&div2A)
+	db.Create(&div2B)
+	db.Create(&div2C)
+
+	items2A := []domain.WorkoutTemplateItem{
+		{WorkoutTemplateDivID: div2A.ID, ExerciseID: pick("Supino Reto com Barra"), Sets: 4, Reps: "8-10", LoadKg: 30, RestSeconds: 90, OrderIndex: 1, Notes: "Carga progressiva com boa técnica"},
+		{WorkoutTemplateDivID: div2A.ID, ExerciseID: pick("Supino Inclinado com Halteres"), Sets: 4, Reps: "10-12", LoadKg: 16, RestSeconds: 60, OrderIndex: 2, Notes: "Inclinação do banco em 30°"},
+		{WorkoutTemplateDivID: div2A.ID, ExerciseID: pick("Crucifixo Reto com Halteres"), Sets: 3, Reps: "12", LoadKg: 12, RestSeconds: 60, OrderIndex: 3},
+		{WorkoutTemplateDivID: div2A.ID, ExerciseID: pick("Desenvolvimento Militar com Halteres"), Sets: 4, Reps: "10", LoadKg: 12, RestSeconds: 60, OrderIndex: 4},
+		{WorkoutTemplateDivID: div2A.ID, ExerciseID: pick("Elevação Lateral com Halteres"), Sets: 4, Reps: "12-15", LoadKg: 6, RestSeconds: 45, OrderIndex: 5},
+		{WorkoutTemplateDivID: div2A.ID, ExerciseID: pick("Tríceps Pulley com Corda"), Sets: 4, Reps: "12", LoadKg: 20, RestSeconds: 45, OrderIndex: 6, Notes: "Abrir a corda no final"},
+		{WorkoutTemplateDivID: div2A.ID, ExerciseID: pick("Tríceps Testa com Barra W"), Sets: 3, Reps: "10-12", LoadKg: 12, RestSeconds: 60, OrderIndex: 7},
+	}
+	for _, it := range items2A {
+		if it.ExerciseID != uuid.Nil {
+			db.Create(&it)
+		}
+	}
+
+	items2B := []domain.WorkoutTemplateItem{
+		{WorkoutTemplateDivID: div2B.ID, ExerciseID: pick("Puxada Frontal Aberta"), Sets: 4, Reps: "10-12", LoadKg: 40, RestSeconds: 60, OrderIndex: 1},
+		{WorkoutTemplateDivID: div2B.ID, ExerciseID: pick("Remada Curvada com Barra (Pronada)"), Sets: 4, Reps: "8-10", LoadKg: 30, RestSeconds: 90, OrderIndex: 2},
+		{WorkoutTemplateDivID: div2B.ID, ExerciseID: pick("Remada Baixa no Cabo (Triângulo)"), Sets: 3, Reps: "10-12", LoadKg: 35, RestSeconds: 60, OrderIndex: 3},
+		{WorkoutTemplateDivID: div2B.ID, ExerciseID: pick("Rosca Direta com Barra W"), Sets: 4, Reps: "10", LoadKg: 15, RestSeconds: 60, OrderIndex: 4},
+		{WorkoutTemplateDivID: div2B.ID, ExerciseID: pick("Rosca Martelo com Halteres"), Sets: 3, Reps: "12", LoadKg: 10, RestSeconds: 45, OrderIndex: 5},
+		{WorkoutTemplateDivID: div2B.ID, ExerciseID: pick("Rosca Scott com Barra W"), Sets: 3, Reps: "10-12", LoadKg: 12, RestSeconds: 60, OrderIndex: 6},
+	}
+	for _, it := range items2B {
+		if it.ExerciseID != uuid.Nil {
+			db.Create(&it)
+		}
+	}
+
+	items2C := []domain.WorkoutTemplateItem{
+		{WorkoutTemplateDivID: div2C.ID, ExerciseID: pick("Agachamento Livre com Barra"), Sets: 4, Reps: "8-10", LoadKg: 40, RestSeconds: 120, OrderIndex: 1},
+		{WorkoutTemplateDivID: div2C.ID, ExerciseID: pick("Leg Press 45°"), Sets: 4, Reps: "10-12", LoadKg: 100, RestSeconds: 90, OrderIndex: 2},
+		{WorkoutTemplateDivID: div2C.ID, ExerciseID: pick("Cadeira Extensora"), Sets: 3, Reps: "12-15", LoadKg: 30, RestSeconds: 60, OrderIndex: 3},
+		{WorkoutTemplateDivID: div2C.ID, ExerciseID: pick("Mesa Flexora"), Sets: 4, Reps: "10-12", LoadKg: 25, RestSeconds: 60, OrderIndex: 4},
+		{WorkoutTemplateDivID: div2C.ID, ExerciseID: pick("Elevação Pélvica com Barra (Hip Thrust)"), Sets: 4, Reps: "10-12", LoadKg: 40, RestSeconds: 90, OrderIndex: 5},
+		{WorkoutTemplateDivID: div2C.ID, ExerciseID: pick("Gêmeos no Leg Press"), Sets: 4, Reps: "15", LoadKg: 80, RestSeconds: 45, OrderIndex: 6},
+	}
+	for _, it := range items2C {
+		if it.ExerciseID != uuid.Nil {
+			db.Create(&it)
+		}
+	}
+
+	// 3. Foco Glúteo e Membros Inferiores Feminino (AB)
+	t3 := domain.WorkoutTemplate{
+		Title:       "Feminino: Foco Glúteos & Pernas (AB)",
+		Goal:        "Hipertrofia",
+		Level:       "Intermediário",
+		Description: "Protocolo especializado com ênfase máxima em glúteo máximo, médio e quadríceps, com estímulo compensatório para membros superiores.",
+	}
+	db.Create(&t3)
+	div3A := domain.WorkoutTemplateDiv{WorkoutTemplateID: t3.ID, Letter: "A", Name: "Glúteos & Quadríceps", OrderIndex: 1}
+	div3B := domain.WorkoutTemplateDiv{WorkoutTemplateID: t3.ID, Letter: "B", Name: "Posteriores, Superiores & Abdômen", OrderIndex: 2}
+	db.Create(&div3A)
+	db.Create(&div3B)
+
+	items3A := []domain.WorkoutTemplateItem{
+		{WorkoutTemplateDivID: div3A.ID, ExerciseID: pick("Elevação Pélvica com Barra (Hip Thrust)"), Sets: 4, Reps: "10-12", LoadKg: 35, RestSeconds: 90, OrderIndex: 1, Notes: "Pausa de 2 segundos no topo"},
+		{WorkoutTemplateDivID: div3A.ID, ExerciseID: pick("Agachamento Búlgaro"), Sets: 3, Reps: "10 cada lado", LoadKg: 8, RestSeconds: 60, OrderIndex: 2},
+		{WorkoutTemplateDivID: div3A.ID, ExerciseID: pick("Leg Press 45°"), Sets: 4, Reps: "12", LoadKg: 70, RestSeconds: 60, OrderIndex: 3, Notes: "Pés na largura dos ombros"},
+		{WorkoutTemplateDivID: div3A.ID, ExerciseID: pick("Cadeira Extensora"), Sets: 3, Reps: "15", LoadKg: 25, RestSeconds: 45, OrderIndex: 4},
+		{WorkoutTemplateDivID: div3A.ID, ExerciseID: pick("Cadeira Abdutora"), Sets: 4, Reps: "15-20", LoadKg: 35, RestSeconds: 45, OrderIndex: 5, Notes: "Inclinar o tronco à frente"},
+		{WorkoutTemplateDivID: div3A.ID, ExerciseID: pick("Gêmeos no Leg Press"), Sets: 4, Reps: "15", LoadKg: 60, RestSeconds: 45, OrderIndex: 6},
+	}
+	for _, it := range items3A {
+		if it.ExerciseID != uuid.Nil {
+			db.Create(&it)
+		}
+	}
+
+	items3B := []domain.WorkoutTemplateItem{
+		{WorkoutTemplateDivID: div3B.ID, ExerciseID: pick("Mesa Flexora"), Sets: 4, Reps: "10-12", LoadKg: 25, RestSeconds: 60, OrderIndex: 1},
+		{WorkoutTemplateDivID: div3B.ID, ExerciseID: pick("Puxada Frontal com Triângulo"), Sets: 3, Reps: "12", LoadKg: 25, RestSeconds: 60, OrderIndex: 2},
+		{WorkoutTemplateDivID: div3B.ID, ExerciseID: pick("Supino Inclinado com Halteres"), Sets: 3, Reps: "12", LoadKg: 8, RestSeconds: 60, OrderIndex: 3},
+		{WorkoutTemplateDivID: div3B.ID, ExerciseID: pick("Desenvolvimento Militar com Halteres"), Sets: 3, Reps: "12", LoadKg: 6, RestSeconds: 60, OrderIndex: 4},
+		{WorkoutTemplateDivID: div3B.ID, ExerciseID: pick("Prancha Abdominal Isométrica"), Sets: 3, Reps: "45s", LoadKg: 0, RestSeconds: 45, OrderIndex: 5},
+	}
+	for _, it := range items3B {
+		if it.ExerciseID != uuid.Nil {
+			db.Create(&it)
+		}
+	}
+
+	// 4. Funcional & Emagrecimento (Metabólico)
+	t4 := domain.WorkoutTemplate{
+		Title:       "Funcional & Queima Calórica (Metabólico)",
+		Goal:        "Emagrecimento",
+		Level:       "Iniciante",
+		Description: "Protocolo de alta intensidade metabólica com exercícios dinâmicos e curtos tempos de descanso. Ideal para condicionamento e queima calórica.",
+	}
+	db.Create(&t4)
+	div4A := domain.WorkoutTemplateDiv{WorkoutTemplateID: t4.ID, Letter: "A", Name: "Circuito Full Body Metabólico", OrderIndex: 1}
+	db.Create(&div4A)
+	items4A := []domain.WorkoutTemplateItem{
+		{WorkoutTemplateDivID: div4A.ID, ExerciseID: pick("Agachamento Livre com Barra"), Sets: 4, Reps: "15", LoadKg: 20, RestSeconds: 45, OrderIndex: 1},
+		{WorkoutTemplateDivID: div4A.ID, ExerciseID: pick("Flexão de Braços (Push-up)"), Sets: 3, Reps: "12", LoadKg: 0, RestSeconds: 45, OrderIndex: 2},
+		{WorkoutTemplateDivID: div4A.ID, ExerciseID: pick("Remada Unilateral com Halter (Serrote)"), Sets: 3, Reps: "12", LoadKg: 12, RestSeconds: 45, OrderIndex: 3},
+		{WorkoutTemplateDivID: div4A.ID, ExerciseID: pick("Desenvolvimento Militar com Halteres"), Sets: 3, Reps: "15", LoadKg: 6, RestSeconds: 45, OrderIndex: 4},
+		{WorkoutTemplateDivID: div4A.ID, ExerciseID: pick("Prancha Abdominal Isométrica"), Sets: 3, Reps: "45s", LoadKg: 0, RestSeconds: 30, OrderIndex: 5},
+	}
+	for _, it := range items4A {
+		if it.ExerciseID != uuid.Nil {
+			db.Create(&it)
+		}
+	}
+
+	log.Println("[SEED] Biblioteca de modelos de treino populada com sucesso!")
+	return nil
 }

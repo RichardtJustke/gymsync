@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"gymsync/backend/internal/domain"
 
@@ -53,6 +52,15 @@ type ImportSummary struct {
 	UpdatedCount   int      `json:"updated_count"`
 	SkippedCount   int      `json:"skipped_count"`
 	Errors         []string `json:"errors"`
+	// Credenciais provisórias das alunas novas (exibidas uma única vez para a gestão repassar)
+	Credentials []Credential `json:"credentials"`
+}
+
+// Credential login + senha provisória gerada
+type Credential struct {
+	Name         string `json:"name"`
+	Login        string `json:"login"`
+	TempPassword string `json:"temp_password"`
 }
 
 type ImporterService struct {
@@ -121,6 +129,7 @@ func (s *ImporterService) ExecuteImport(gymID uuid.UUID, rows []ParsedStudentRow
 	summary := &ImportSummary{
 		TotalProcessed: len(rows),
 		Errors:         make([]string, 0),
+		Credentials:    make([]Credential, 0),
 	}
 
 	for _, item := range rows {
@@ -139,19 +148,16 @@ func (s *ImporterService) ExecuteImport(gymID uuid.UUID, rows []ParsedStudentRow
 			continue
 		}
 
-		// Senha inicial: 6 primeiros dígitos do CPF ou "123456"
-		initialPass := "123456"
-		if len(cleanDoc) >= 6 {
-			initialPass = cleanDoc[:6]
-		}
-		passHash, _ := bcrypt.GenerateFromPassword([]byte(initialPass), bcrypt.DefaultCost)
-
 		if err == gorm.ErrRecordNotFound {
+			// Senha provisória aleatória (troca obrigatória no primeiro acesso)
+			initialPass := TempPassword()
+			passHash, _ := bcrypt.GenerateFromPassword([]byte(initialPass), bcrypt.DefaultCost)
+
 			// Novo usuário
 			user = domain.User{
 				GymID:        gymID,
 				Name:         item.Name,
-				Email:        item.Email,
+				Email:        strings.ToLower(strings.TrimSpace(item.Email)),
 				Document:     cleanDoc,
 				Phone:        item.Phone,
 				PasswordHash: string(passHash),
@@ -189,9 +195,11 @@ func (s *ImporterService) ExecuteImport(gymID uuid.UUID, rows []ParsedStudentRow
 				continue
 			}
 
-			// Cria automaticamente fatura do mês atual mockada para o novo aluno
-			s.createInitialInvoice(gymID, student.ID, item.PlanPrice, dueDay)
-
+			login := user.Email
+			if login == "" {
+				login = cleanDoc
+			}
+			summary.Credentials = append(summary.Credentials, Credential{Name: user.Name, Login: login, TempPassword: initialPass})
 			summary.CreatedCount++
 		} else {
 			// Usuário já existe, atualiza dados do aluno
@@ -208,29 +216,6 @@ func (s *ImporterService) ExecuteImport(gymID uuid.UUID, rows []ParsedStudentRow
 	}
 
 	return summary, nil
-}
-
-func (s *ImporterService) createInitialInvoice(gymID, studentID uuid.UUID, amount float64, dueDay int) {
-	if amount <= 0 {
-		amount = 99.90
-	}
-	now := time.Now()
-	dueDate := time.Date(now.Year(), now.Month(), dueDay, 23, 59, 59, 0, now.Location())
-	if dueDate.Before(now) {
-		dueDate = dueDate.AddDate(0, 1, 0)
-	}
-
-	invoice := domain.Invoice{
-		GymID:        gymID,
-		StudentID:    studentID,
-		Amount:       amount,
-		DueDate:      dueDate,
-		Status:       domain.InvoicePendente,
-		BoletoDigits: fmt.Sprintf("34191.%05d %05d.510047 91020.150008 5 %014d", studentID.ID()&0xFFFF, dueDay*1000, int(amount*100)),
-		PixCopyPaste: fmt.Sprintf("00020126580014br.gov.bcb.pix0136gymsync-%s520400005303986540%.2f5802BR5916GYMSYNC FITNESS6009SAO PAULO62070503***6304ABCD", studentID.String(), amount),
-		Description:  "Mensalidade Inicial de Boas-Vindas",
-	}
-	s.db.Create(&invoice)
 }
 
 // Helpers de leitura e normalização

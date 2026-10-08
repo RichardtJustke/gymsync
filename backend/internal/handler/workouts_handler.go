@@ -7,6 +7,7 @@ import (
 
 	"gymsync/backend/internal/domain"
 	"gymsync/backend/internal/middleware"
+	"gymsync/backend/internal/service"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -14,11 +15,12 @@ import (
 )
 
 type WorkoutsHandler struct {
-	db *gorm.DB
+	db       *gorm.DB
+	notifier *service.Notifier
 }
 
-func NewWorkoutsHandler(db *gorm.DB) *WorkoutsHandler {
-	return &WorkoutsHandler{db: db}
+func NewWorkoutsHandler(db *gorm.DB, notifier *service.Notifier) *WorkoutsHandler {
+	return &WorkoutsHandler{db: db, notifier: notifier}
 }
 
 // GetStudentWorkouts retorna as fichas de um determinado aluno
@@ -137,6 +139,33 @@ func (h *WorkoutsHandler) CreateWorkoutPlan(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// A aluna precisa ser desta academia
+	var student domain.Student
+	if err := h.db.Where("id = ? AND gym_id = ?", studentID, gymID).First(&student).Error; err != nil {
+		respondJSON(w, http.StatusNotFound, map[string]string{"error": "Aluna não encontrada"})
+		return
+	}
+
+	// Os exercícios precisam ser globais ou desta academia
+	exerciseIDs := map[uuid.UUID]bool{}
+	for _, wk := range req.Workouts {
+		for _, it := range wk.Items {
+			exerciseIDs[it.ExerciseID] = true
+		}
+	}
+	if len(exerciseIDs) > 0 {
+		ids := make([]uuid.UUID, 0, len(exerciseIDs))
+		for id := range exerciseIDs {
+			ids = append(ids, id)
+		}
+		var valid int64
+		h.db.Model(&domain.Exercise{}).Where("id IN ? AND (gym_id IS NULL OR gym_id = ?)", ids, gymID).Count(&valid)
+		if int(valid) != len(ids) {
+			respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Exercício inválido na ficha"})
+			return
+		}
+	}
+
 	tx := h.db.Begin()
 
 	// Desativa fichas anteriores
@@ -205,7 +234,13 @@ func (h *WorkoutsHandler) CreateWorkoutPlan(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "Falha ao salvar ficha"})
+		return
+	}
+
+	h.notifier.NotifyStudents(gymID, []uuid.UUID{studentID}, domain.NotifyWorkout,
+		"Nova ficha de treino 💪", "Sua professora montou a ficha \""+plan.Title+"\". Confira no app!", "/aluno/?tab=treino")
 
 	respondJSON(w, http.StatusCreated, plan)
 }
@@ -226,6 +261,27 @@ func (h *WorkoutsHandler) UpdateExerciseLoad(w http.ResponseWriter, r *http.Requ
 	var req UpdateLoadRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "JSON inválido"})
+		return
+	}
+
+	if req.LoadKg < 0 || req.LoadKg > 1000 {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Carga inválida"})
+		return
+	}
+
+	// Só a dona da ficha (ou a equipe da mesma academia) pode alterar a carga
+	claims := middleware.GetUserFromContext(r.Context())
+	owner := h.db.Model(&domain.WorkoutExercise{}).
+		Joins("JOIN workouts ON workouts.id = workout_exercises.workout_id").
+		Joins("JOIN workout_plans ON workout_plans.id = workouts.workout_plan_id").
+		Where("workout_exercises.id = ? AND workout_plans.gym_id = ?", itemId, claims.GymID)
+	if claims.Role == domain.RoleAluno {
+		owner = owner.Joins("JOIN students ON students.id = workout_plans.student_id").Where("students.user_id = ?", claims.UserID)
+	}
+	var count int64
+	owner.Count(&count)
+	if count == 0 {
+		respondJSON(w, http.StatusNotFound, map[string]string{"error": "Exercício não encontrado na sua ficha"})
 		return
 	}
 

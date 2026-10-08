@@ -2,22 +2,32 @@ package mockbilling
 
 import (
 	"fmt"
+	"html"
 	"math/rand"
 	"strings"
-	"time"
-
 	"gymsync/backend/internal/domain"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
-type MockBillingService struct {
-	db *gorm.DB
-}
+// MockGateway gateway de pagamento simulado: gera boleto e PIX de mentira.
+// Substituir por uma integração real (Asaas, Pagar.me, Mercado Pago...) implementando service.PaymentGateway.
+type MockGateway struct{}
 
-func NewMockBillingService(db *gorm.DB) *MockBillingService {
-	return &MockBillingService{db: db}
+func (MockGateway) Name() string { return "mock" }
+
+// Issue preenche linha digitável e PIX copia-e-cola simulados
+func (MockGateway) Issue(inv *domain.Invoice, gym *domain.Gym) error {
+	if inv.ID == uuid.Nil {
+		inv.ID = uuid.New()
+	}
+	name := "Academia"
+	if gym != nil {
+		name = gym.Name
+	}
+	inv.BoletoDigits = GenerateBoletoDigits(inv.Amount-inv.Discount, inv.DueDate.Day())
+	inv.PixCopyPaste = GeneratePixPayload(inv.ID, inv.Amount-inv.Discount, name)
+	return nil
 }
 
 // GenerateBoletoDigits cria uma linha digitável verossímil de teste
@@ -44,41 +54,6 @@ func GeneratePixPayload(invoiceID uuid.UUID, amount float64, gymName string) str
 		invoiceID.String(), amount, len(cleanName), cleanName)
 }
 
-// SimulatePayment simula o pagamento instantâneo da fatura pelo aluno ou webhook
-func (s *MockBillingService) SimulatePayment(invoiceID uuid.UUID) (*domain.Invoice, error) {
-	var invoice domain.Invoice
-	if err := s.db.Preload("Student").First(&invoice, "id = ?", invoiceID).Error; err != nil {
-		return nil, fmt.Errorf("fatura não encontrada: %w", err)
-	}
-
-	if invoice.Status == domain.InvoicePago {
-		return &invoice, nil // Já está pago
-	}
-
-	now := time.Now()
-	invoice.Status = domain.InvoicePago
-	invoice.PaidAt = &now
-
-	if err := s.db.Save(&invoice).Error; err != nil {
-		return nil, fmt.Errorf("falha ao atualizar status da fatura: %w", err)
-	}
-
-	// Se o aluno estava inadimplente, verifica se ainda possui outras faturas vencidas
-	if invoice.StudentID != uuid.Nil {
-		var pendingCount int64
-		s.db.Model(&domain.Invoice{}).
-			Where("student_id = ? AND status IN (?, ?) AND due_date < ?", invoice.StudentID, domain.InvoicePendente, domain.InvoiceVencido, now).
-			Count(&pendingCount)
-
-		if pendingCount == 0 {
-			// Regulariza o aluno para ATIVO
-			s.db.Model(&domain.Student{}).Where("id = ?", invoice.StudentID).Update("status", domain.StatusAtivo)
-		}
-	}
-
-	return &invoice, nil
-}
-
 // GenerateBoletoHTML gera uma visualização imprimível estilizada do boleto bancário mock
 func GenerateBoletoHTML(invoice *domain.Invoice, gym *domain.Gym, studentName, studentDoc string) string {
 	gymName := "GymSync Academia"
@@ -88,8 +63,12 @@ func GenerateBoletoHTML(invoice *domain.Invoice, gym *domain.Gym, studentName, s
 		gymDoc = gym.Document
 	}
 
+	// Tudo que vem de cadastro é escapado: o HTML é aberto no navegador da equipe/aluno
+	esc := html.EscapeString
+	gymName, gymDoc, studentName, studentDoc = esc(gymName), esc(gymDoc), esc(studentName), esc(studentDoc)
+	desc := esc(invoice.Description)
 	dueDateStr := invoice.DueDate.Format("02/01/2006")
-	amountStr := fmt.Sprintf("R$ %.2f", invoice.Amount)
+	amountStr := fmt.Sprintf("R$ %.2f", invoice.Amount-invoice.Discount)
 
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html lang="pt-BR">
@@ -164,5 +143,5 @@ func GenerateBoletoHTML(invoice *domain.Invoice, gym *domain.Gym, studentName, s
     <div style="text-align: center; font-size: 11px; color: #666;">Corte na linha pontilhada | Autenticação Mecânica</div>
   </div>
 </body>
-</html>`, invoice.Description, invoice.BoletoDigits, dueDateStr, gymName, gymDoc, amountStr, studentName, studentDoc, invoice.Status, invoice.Description)
+</html>`, desc, esc(invoice.BoletoDigits), dueDateStr, gymName, gymDoc, amountStr, studentName, studentDoc, invoice.Status, desc)
 }
