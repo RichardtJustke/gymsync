@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { BRAND } from "@/lib/brand";
 
 /* ------------------------------------------------------------------ */
 /* Ring de progresso circular                                          */
@@ -9,7 +10,7 @@ export function Ring({
   value,
   size = 64,
   stroke = 7,
-  color = "#D7FF3A",
+  color = BRAND,
   track = "rgba(255,255,255,0.08)",
   children,
 }: {
@@ -63,13 +64,13 @@ export function Bars({
 }) {
   const max = Math.max(...values, 1);
   return (
-    <div className="flex items-end gap-1.5">
+    <div className="flex items-end gap-1 sm:gap-1.5 w-full">
       {values.map((v, i) => {
         const on = highlight === undefined ? !dim : i === highlight;
         return (
-          <div key={i} className="flex flex-col items-center gap-1.5">
+          <div key={i} className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
             <div
-              className={`w-3.5 rounded-[5px] transition-all ${on ? "bg-lime" : dim ? "bg-white/10" : "bg-lime/40"}`}
+              className={`w-full max-w-3.5 rounded-[5px] transition-all ${on ? "bg-brand" : dim ? "bg-white/10" : "bg-brand/40"}`}
               style={{ height: Math.max(6, (v / max) * height) }}
             />
             {labels && <span className="text-[10px] text-ink-300">{labels[i]}</span>}
@@ -102,7 +103,7 @@ export function WeekStrip() {
         return (
           <div
             key={d.toISOString()}
-            className={`flex flex-col items-center gap-1 w-11 py-2.5 rounded-2xl transition-all ${isToday ? "bg-lime text-black shadow-lime" : "text-ink-300"}`}
+            className={`flex flex-col items-center gap-1 w-11 py-2.5 rounded-2xl transition-all ${isToday ? "bg-brand text-black shadow-brand" : "text-ink-300"}`}
           >
             <span className={`text-[11px] ${isToday ? "font-semibold" : ""}`}>{WEEK[d.getDay()]}</span>
             <span className={`text-sm font-semibold ${isToday ? "" : "text-white"}`}>{d.getDate()}</span>
@@ -116,7 +117,7 @@ export function WeekStrip() {
 /* ------------------------------------------------------------------ */
 /* Avatar com iniciais                                                 */
 /* ------------------------------------------------------------------ */
-export function Avatar({ name, size = 44, tone = "lime" }: { name?: string; size?: number; tone?: "lime" | "dark" }) {
+export function Avatar({ name, size = 44, tone = "brand" }: { name?: string; size?: number; tone?: "brand" | "dark" }) {
   const initials =
     (name || "?")
       .split(" ")
@@ -127,7 +128,7 @@ export function Avatar({ name, size = 44, tone = "lime" }: { name?: string; size
       .toUpperCase() || "?";
   return (
     <div
-      className={`rounded-full flex items-center justify-center font-semibold shrink-0 ${tone === "lime" ? "bg-lime text-black" : "bg-ink-700 text-white"}`}
+      className={`rounded-full flex items-center justify-center font-semibold shrink-0 ${tone === "brand" ? "bg-brand text-black" : "bg-ink-700 text-white"}`}
       style={{ width: size, height: size, fontSize: size * 0.36 }}
     >
       {initials}
@@ -179,7 +180,7 @@ export function StatCard({
   label,
   value,
   hint,
-  accent = "#D7FF3A",
+  accent = BRAND,
   progress,
   variant = "dark",
 }: {
@@ -189,29 +190,29 @@ export function StatCard({
   hint?: React.ReactNode;
   accent?: string;
   progress?: number;
-  variant?: "dark" | "lime";
+  variant?: "dark" | "brand";
 }) {
-  const lime = variant === "lime";
+  const brand = variant === "brand";
   return (
-    <div className={`${lime ? "card-lime" : "card"} p-5 flex flex-col justify-between gap-4 min-h-[148px] animate-fade-up`}>
+    <div className={`${brand ? "card-brand" : "card"} p-4 sm:p-5 flex flex-col justify-between gap-3 sm:gap-4 min-h-[128px] sm:min-h-[148px] animate-fade-up`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${lime ? "bg-black/10" : "bg-white/5"}`}
-            style={{ color: lime ? "#000" : accent }}
+            className={`w-8 h-8 rounded-full flex items-center justify-center ${brand ? "bg-black/10" : "bg-white/5"}`}
+            style={{ color: brand ? "#000" : accent }}
           >
             {icon}
           </span>
-          <span className={`text-sm font-medium ${lime ? "text-black/70" : "text-ink-200"}`}>{label}</span>
+          <span className={`text-sm font-medium ${brand ? "text-black/70" : "text-ink-200"}`}>{label}</span>
         </div>
       </div>
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <div className={`text-3xl font-semibold tracking-tight ${lime ? "text-black" : "text-white"}`}>{value}</div>
-          {hint && <div className={`text-xs mt-1 ${lime ? "text-black/60" : "text-ink-300"}`}>{hint}</div>}
+      <div className="flex items-end justify-between gap-2 sm:gap-3">
+        <div className="min-w-0">
+          <div className={`text-xl sm:text-3xl font-semibold tracking-tight ${brand ? "text-black" : "text-white"}`}>{value}</div>
+          {hint && <div className={`text-xs mt-1 ${brand ? "text-black/60" : "text-ink-300"}`}>{hint}</div>}
         </div>
         {progress !== undefined && (
-          <Ring value={progress} size={52} stroke={6} color={lime ? "#000" : accent} track={lime ? "rgba(0,0,0,0.12)" : undefined} />
+          <Ring value={progress} size={44} stroke={5} color={brand ? "#000" : accent} track={brand ? "rgba(0,0,0,0.12)" : undefined} />
         )}
       </div>
     </div>
@@ -224,7 +225,7 @@ export function StatCard({
 export function Notice({ tone, children, icon }: { tone: "ok" | "bad"; children: React.ReactNode; icon?: React.ReactNode }) {
   return (
     <div
-      className={`p-4 rounded-2xl text-sm flex items-center gap-3 animate-fade-up ${tone === "ok" ? "bg-lime/10 text-lime" : "bg-[#FF5A36]/10 text-[#FF7A5C]"}`}
+      className={`p-4 rounded-2xl text-sm flex items-center gap-3 animate-fade-up ${tone === "ok" ? "bg-brand/10 text-brand" : "bg-[#FF5A36]/10 text-[#FF7A5C]"}`}
     >
       {icon}
       <span>{children}</span>
@@ -275,13 +276,14 @@ export function Modal({
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={hideClose ? undefined : onClose} />
-      <div className={`relative w-full ${width} max-h-[92vh] flex flex-col card rounded-b-none sm:rounded-b-3xl animate-fade-up`}>
+      <div className={`relative w-full ${width} max-h-[92vh] flex flex-col card rounded-b-none rounded-t-4xl sm:rounded-3xl animate-fade-up`}>
+        <div className="sm:hidden mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-white/15" aria-hidden />
         <div className="flex items-center justify-between gap-3 p-5 pb-3">
           <h3 className="section-title">{title}</h3>
           {!hideClose && <button onClick={onClose} className="btn-icon w-9 h-9 bg-ink-750 text-ink-300 hover:text-white" aria-label="Fechar">✕</button>}
         </div>
-        <div className="px-5 pb-5 overflow-y-auto space-y-4">{children}</div>
-        {footer && <div className="p-5 pt-3 border-t border-white/5 flex flex-wrap justify-end gap-2">{footer}</div>}
+        <div className={`px-5 overflow-y-auto space-y-4 ${footer ? "pb-5" : "pb-safe sm:pb-5"}`}>{children}</div>
+        {footer && <div className="p-5 pt-3 pb-safe sm:pb-5 border-t border-white/5 flex flex-wrap justify-end gap-2 [&>*]:flex-1 sm:[&>*]:flex-none">{footer}</div>}
       </div>
     </div>
   );
@@ -293,13 +295,41 @@ export function Drawer({ title, onClose, children, width = "max-w-xl" }: { title
     <div className="fixed inset-0 z-[100] flex justify-end" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className={`relative w-full ${width} h-full bg-ink-850 border-l border-white/5 flex flex-col animate-fade-up`}>
-        <div className="flex items-center justify-between gap-3 p-5 border-b border-white/5">
+        <div className="flex items-center justify-between gap-3 p-5 pt-safe sm:pt-5 border-b border-white/5">
           <h3 className="section-title">{title}</h3>
           <button onClick={onClose} className="btn-icon w-9 h-9 bg-ink-750 text-ink-300 hover:text-white" aria-label="Fechar">✕</button>
         </div>
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">{children}</div>
+        <div className="flex-1 overflow-y-auto p-5 pb-safe sm:pb-5 space-y-5">{children}</div>
       </div>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Dock inferior do celular (some no desktop)                          */
+/* ------------------------------------------------------------------ */
+export function Dock<T extends string>({ items, value, onChange }: { items: { id: T; label: string; icon: React.ReactNode }[]; value: T; onChange: (id: T) => void }) {
+  return (
+    <nav className="lg:hidden fixed dock-bottom inset-x-0 z-40 px-3 print:hidden">
+      <div className="max-w-md mx-auto flex items-center justify-between p-1.5 rounded-full bg-ink-850/90 backdrop-blur-xl border border-white/[0.08] shadow-card">
+        {items.map((t) => {
+          const on = value === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => onChange(t.id)}
+              aria-current={on ? "page" : undefined}
+              className={`flex-1 min-w-0 flex flex-col items-center gap-1 py-2 rounded-full transition-all active:scale-95 ${
+                on ? "bg-brand text-black font-bold shadow-glow" : "text-ink-300 hover:text-white"
+              }`}
+            >
+              {t.icon}
+              <span className="text-[10px] truncate max-w-full px-1">{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
@@ -350,7 +380,7 @@ export function MonthPicker({ value, onChange, label }: { value: string; onChang
 /* ------------------------------------------------------------------ */
 /* Barra de progresso                                                  */
 /* ------------------------------------------------------------------ */
-export function Progress({ value, color = "#D7FF3A", height = 8 }: { value: number; color?: string; height?: number }) {
+export function Progress({ value, color = BRAND, height = 8 }: { value: number; color?: string; height?: number }) {
   const v = Math.max(0, Math.min(100, value));
   return (
     <div className="w-full rounded-full bg-white/10 overflow-hidden" style={{ height }}>
@@ -366,7 +396,7 @@ export function LineChart({
   values,
   labels,
   height = 120,
-  color = "#D7FF3A",
+  color = BRAND,
   format,
 }: {
   values: number[];
@@ -438,7 +468,7 @@ export function ConfirmDialog({
       footer={
         <>
           <button className="btn-ghost" onClick={onClose}>Voltar</button>
-          <button className={danger ? "btn bg-[#FF5A36] text-white px-5 py-3 hover:brightness-110" : "btn-lime"} disabled={blocked} onClick={() => onConfirm(reason.trim())}>
+          <button className={danger ? "btn bg-[#FF5A36] text-white px-5 py-3 hover:brightness-110" : "btn-brand"} disabled={blocked} onClick={() => onConfirm(reason.trim())}>
             {busy ? "Aguarde…" : confirmLabel}
           </button>
         </>

@@ -53,7 +53,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={t.id}
             className={`pointer-events-auto flex items-center justify-between gap-3 p-4 rounded-2xl shadow-card backdrop-blur-xl border animate-fade-up ${
               t.type === "success"
-                ? "bg-ink-850/95 border-lime/40 text-white"
+                ? "bg-ink-850/95 border-brand/40 text-white"
                 : t.type === "error"
                 ? "bg-ink-850/95 border-[#FF5A36]/40 text-white"
                 : "bg-ink-850/95 border-white/10 text-white"
@@ -61,7 +61,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           >
             <div className="flex items-center gap-3">
               {t.type === "success" && (
-                <div className="w-8 h-8 rounded-full bg-lime/20 text-lime flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-brand/20 text-brand flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
               )}

@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       </div>
 
       <div className="space-y-3">
-        <div className="w-12 h-12 rounded-2xl bg-lime/15 text-lime flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-brand/15 text-brand flex items-center justify-center">
           <Shield className="w-6 h-6" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
@@ -29,16 +29,16 @@ export default function PrivacyPage() {
       <div className="space-y-6 text-sm text-ink-200 leading-relaxed">
         <section className="card p-6 space-y-3">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Lock className="w-5 h-5 text-lime" /> 1. Compromisso com sua Privacidade
+            <Lock className="w-5 h-5 text-brand" /> 1. Compromisso com sua Privacidade
           </h2>
           <p>
-            A plataforma <strong>GymSync</strong> preza pela segurança, confidencialidade e integridade dos dados de seus alunos, professores e colaboradores. Tratamos seus dados pessoais em estrita observância à Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018).
+            A plataforma <strong>GymSync</strong> preza pela segurança, confidencialidade e integridade dos dados de suas alunas, professores e colaboradores. Tratamos seus dados pessoais em estrita observância à Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018).
           </p>
         </section>
 
         <section className="card p-6 space-y-3">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Database className="w-5 h-5 text-lime" /> 2. Dados Coletados e Finalidade
+            <Database className="w-5 h-5 text-brand" /> 2. Dados Coletados e Finalidade
           </h2>
           <ul className="space-y-2 list-disc list-inside text-ink-300">
             <li><strong>Identificação e Cadastro:</strong> Nome completo, CPF, e-mail e telefone para identificação na entrada (check-in) e comunicação.</li>
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
 
         <section className="card p-6 space-y-3">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <UserX className="w-5 h-5 text-lime" /> 3. Seus Direitos como Titular (Art. 18 LGPD)
+            <UserX className="w-5 h-5 text-brand" /> 3. Seus Direitos como Titular (Art. 18 LGPD)
           </h2>
           <p>Você tem o direito de, a qualquer momento e mediante requisição simples:</p>
           <div className="grid sm:grid-cols-2 gap-3 pt-2">
@@ -74,10 +74,10 @@ export default function PrivacyPage() {
 
         <section className="card p-6 space-y-3">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-lime" /> 4. Contato do Encarregado de Dados (DPO)
+            <FileText className="w-5 h-5 text-brand" /> 4. Contato do Encarregado de Dados (DPO)
           </h2>
           <p>
-            Para exercer seus direitos ou esclarecer qualquer dúvida sobre o tratamento de seus dados, entre em contato diretamente com nossa equipe de privacidade pelo e-mail: <strong className="text-lime">privacidade@unika.app</strong>.
+            Para exercer seus direitos ou esclarecer qualquer dúvida sobre o tratamento de seus dados, entre em contato diretamente com nossa equipe de privacidade pelo e-mail: <strong className="text-brand">privacidade@unika.app</strong>.
           </p>
         </section>
       </div>

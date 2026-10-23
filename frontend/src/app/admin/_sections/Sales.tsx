@@ -32,13 +32,13 @@ export default function Sales({ can }: { can: (...p: Permission[]) => boolean })
   return (
     <div className="space-y-6">
       <PageHead title="Vendas e metas" subtitle="Matrículas, renovações, comissões e desempenho da equipe comercial"
-        actions={<><MonthPicker value={month} onChange={setMonth} label={monthLabel} /><button className="btn-lime" onClick={() => setShowNew(true)}><Plus className="w-4 h-4" />Registrar venda</button></>} />
+        actions={<><MonthPicker value={month} onChange={setMonth} label={monthLabel} /><button className="btn-brand" onClick={() => setShowNew(true)}><Plus className="w-4 h-4" />Registrar venda</button></>} />
 
       {ranking.error ? <ErrorBox message={ranking.error} onRetry={ranking.reload} /> : !r ? <Loading rows={2} /> : (
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <StatCard icon={<Trophy className="w-4 h-4" />} label="Vendas no mês" value={r.total_sales} hint={r.gym_goal?.target_sales ? `meta ${r.gym_goal.target_sales}` : "sem meta da academia"} progress={r.gym_goal ? r.gym_progress : undefined} />
-            <StatCard variant="lime" icon={<Target className="w-4 h-4" />} label="Faturamento vendido" value={brl(r.total_amount)} hint={r.gym_goal?.target_revenue ? `meta ${brl(r.gym_goal.target_revenue)}` : undefined} />
+            <StatCard variant="brand" icon={<Target className="w-4 h-4" />} label="Faturamento vendido" value={brl(r.total_amount)} hint={r.gym_goal?.target_revenue ? `meta ${brl(r.gym_goal.target_revenue)}` : undefined} />
             <StatCard icon={<Trophy className="w-4 h-4" />} label="Comissões" value={allSeeing ? brl(r.total_commission) : "—"} hint={allSeeing ? "a pagar no fechamento" : "visível só para a gestão"} />
             <div className="card p-5 flex flex-col justify-between gap-3">
               <div className="text-sm text-ink-200">Meta da academia</div>
@@ -55,7 +55,7 @@ export default function Sales({ can }: { can: (...p: Permission[]) => boolean })
                   <li key={row.user_id} className="card-soft p-4">
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="w-6 text-center text-sm font-semibold text-ink-300">{i + 1}º</span>
-                      <Avatar name={row.name} size={40} tone={i === 0 ? "lime" : "dark"} />
+                      <Avatar name={row.name} size={40} tone={i === 0 ? "brand" : "dark"} />
                       <div className="flex-1 min-w-[150px]">
                         <div className="text-sm font-medium text-white">{row.name}{row.user_id === me && <span className="text-ink-400"> (você)</span>}</div>
                         <div className="text-xs text-ink-300">{ROLE_LABEL[row.role]} · {row.new_sales} matrícula(s) · {row.renewals} renovação(ões)</div>
@@ -124,12 +124,12 @@ function NewSaleModal({ can, onClose, onDone }: { can: (...p: Permission[]) => b
 
   return (
     <Modal title="Registrar venda" onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || (!f.plan_id && f.amount <= 0)} onClick={submit}>Registrar</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || (!f.plan_id && f.amount <= 0)} onClick={submit}>Registrar</button></>}>
       <Field label="Tipo"><div className="flex flex-wrap gap-2">{KINDS.map((k) => <button key={k.id} type="button" className={f.kind === k.id ? "pill-on" : "pill-off"} onClick={() => setF({ ...f, kind: k.id })}>{k.label}</button>)}</div></Field>
       {student ? (
         <div className="card-soft p-3 flex items-center justify-between text-sm"><span className="text-white">{student.name}</span><button className="btn-ghost px-3 py-1.5" onClick={() => setStudent(null)}>Trocar</button></div>
       ) : (
-        <Field label="Aluno (opcional)" hint="Matrículas novas são registradas automaticamente ao cadastrar o aluno">
+        <Field label="Aluna (opcional)" hint="Matrículas novas são registradas automaticamente ao cadastrar a aluna">
           <input className="field" placeholder="Digite o nome" value={search} onChange={(e) => setSearch(e.target.value)} />
           {found.data && <ul className="mt-2 space-y-1">{found.data.data.map((s) => <li key={s.id}><button className="w-full text-left p-2.5 rounded-xl hover:bg-white/5 text-sm text-white" onClick={() => setStudent({ id: s.id, name: s.user.name })}>{s.user.name}</button></li>)}</ul>}
         </Field>
@@ -138,7 +138,7 @@ function NewSaleModal({ can, onClose, onDone }: { can: (...p: Permission[]) => b
         <select className="field" value={f.plan_id} onChange={(e) => setF({ ...f, plan_id: e.target.value })}><option value="">Sem plano</option>{plans.data?.map(({ plan: p }) => <option key={p.id} value={p.id}>{p.name} — {brl(p.price)}</option>)}</select>
       </Field>
       {student && f.plan_id && (f.kind === "RENOVACAO" || f.kind === "UPGRADE") && (
-        <label className="flex items-center gap-2 text-sm text-ink-200"><input type="checkbox" checked={f.apply_plan} onChange={(e) => setF({ ...f, apply_plan: e.target.checked })} />Trocar o plano do aluno para este</label>
+        <label className="flex items-center gap-2 text-sm text-ink-200"><input type="checkbox" checked={f.apply_plan} onChange={(e) => setF({ ...f, apply_plan: e.target.checked })} />Trocar o plano da aluna para este</label>
       )}
       <div className="grid grid-cols-2 gap-3">
         <Field label="Valor (R$)" hint={plan ? "Vazio = valor do contrato" : undefined}><NumberInput value={f.amount} min={0} step={0.01} onChange={(n) => setF({ ...f, amount: n })} /></Field>
@@ -155,7 +155,7 @@ function GoalModal({ month, target, onClose, onDone }: { month: string; target: 
   const [revenue, setRevenue] = useState(target.row?.goal_revenue || 0);
   return (
     <Modal title={`Meta ${target.name} — ${monthLabel(month)}`} onClose={onClose} width="max-w-md"
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy}
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy}
         onClick={async () => { const r = await run(() => api.setGoal({ user_id: target.id, month, target_sales: sales, target_revenue: revenue }), "Meta salva"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
       <p className="text-xs text-ink-300">Deixe os dois campos zerados para remover a meta.</p>
       <div className="grid grid-cols-2 gap-3">

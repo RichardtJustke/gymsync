@@ -8,6 +8,7 @@ import { useAction, useAsync } from "@/lib/hooks";
 import { isoDate, timeBR, WEEKDAYS } from "@/lib/format";
 import { ErrorBox, Loading, NumberInput, PageHead } from "./shared";
 import type { Booking, ClassSchedule, ClassSession, Permission } from "@/types";
+import { BRAND } from "@/lib/brand";
 
 function mondayOf(d: Date) {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -44,7 +45,7 @@ export default function Agenda({ can }: { can: (...p: Permission[]) => boolean }
       <PageHead title="Agenda" subtitle="Aulas, chamada e escala dos professores"
         actions={<>
           <PillTabs tabs={[{ id: "semana", label: "Semana" }, { id: "turmas", label: "Turmas fixas" }]} value={view} onChange={setView} />
-          {manage && <button className="btn-lime" onClick={() => setShowNew(true)}><CalendarPlus className="w-4 h-4" />Aula avulsa</button>}
+          {manage && <button className="btn-brand" onClick={() => setShowNew(true)}><CalendarPlus className="w-4 h-4" />Aula avulsa</button>}
         </>} />
 
       {view === "turmas" ? <Schedules manage={manage} teachers={teachers.data || []} onChanged={sessions.reload} /> : (
@@ -71,7 +72,7 @@ export default function Agenda({ can }: { can: (...p: Permission[]) => boolean }
                 return (
                   <section key={d.toISOString()} className="card p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <h3 className={`text-sm font-semibold ${today ? "text-lime" : "text-white"}`}>{WEEKDAYS[d.getDay()]}, {d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</h3>
+                      <h3 className={`text-sm font-semibold ${today ? "text-brand" : "text-white"}`}>{WEEKDAYS[d.getDay()]}, {d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</h3>
                       {today && <Tag tone="ok">hoje</Tag>}
                     </div>
                     {list.length === 0 ? <p className="text-xs text-ink-400">Sem aulas.</p> : (
@@ -81,7 +82,7 @@ export default function Agenda({ can }: { can: (...p: Permission[]) => boolean }
                           const past = new Date(s.ends_at) < new Date();
                           return (
                             <li key={s.id} className={`card-soft p-3 flex flex-wrap items-center gap-3 ${canceled ? "opacity-60" : ""}`}>
-                              <span className="w-1.5 self-stretch rounded-full" style={{ background: s.modality?.color || "#D7FF3A" }} />
+                              <span className="w-1.5 self-stretch rounded-full" style={{ background: s.modality?.color || BRAND }} />
                               <div className="w-24 text-sm font-semibold text-white">{timeBR(s.starts_at)}–{timeBR(s.ends_at)}</div>
                               <div className="flex-1 min-w-[160px]">
                                 <div className="text-sm text-white">{s.title || s.modality?.name}{s.room ? <span className="text-ink-300"> · {s.room}</span> : null}</div>
@@ -111,7 +112,7 @@ export default function Agenda({ can }: { can: (...p: Permission[]) => boolean }
       {attend && <AttendeesModal session={attend} onClose={() => setAttend(null)} onChanged={sessions.reload} />}
       {swap && <SwapModal session={swap} teachers={teachers.data || []} onClose={() => setSwap(null)} onDone={sessions.reload} />}
       {cancel && (
-        <ConfirmDialog title="Cancelar aula" danger confirmLabel="Cancelar aula" askReason="Motivo (os alunos com reserva são avisados)" busy={busy}
+        <ConfirmDialog title="Cancelar aula" danger confirmLabel="Cancelar aula" askReason="Motivo (as alunas com reserva são avisados)" busy={busy}
           message={`${cancel.title || cancel.modality?.name} — ${timeBR(cancel.starts_at)}. Quem reservou recebe uma notificação.`}
           onClose={() => setCancel(null)}
           onConfirm={async (reason) => { const r = await run(() => api.cancelSession(cancel.id, reason), "Aula cancelada"); if (r) { setCancel(null); sessions.reload(); } }} />
@@ -138,7 +139,7 @@ function AttendeesModal({ session, onClose, onChanged }: { session: ClassSession
             return (
               <li key={b.id} className="card-soft p-3 flex items-center gap-3">
                 <Avatar name={name} size={36} tone="dark" />
-                <div className="flex-1 min-w-0"><div className="text-sm text-white truncate">{name}</div><div className="text-[11px] text-ink-300">{b.lead ? "Aula experimental" : b.status === "ESPERA" ? "Lista de espera" : "Aluno"}</div></div>
+                <div className="flex-1 min-w-0"><div className="text-sm text-white truncate">{name}</div><div className="text-[11px] text-ink-300">{b.lead ? "Aula experimental" : b.status === "ESPERA" ? "Lista de espera" : "Aluna"}</div></div>
                 {b.status === "ESPERA" ? <Tag tone="warn">espera</Tag> : (
                   <div className="flex gap-1.5">
                     <button disabled={busy} onClick={() => mark(b, "PRESENTE")} className={b.status === "PRESENTE" ? "pill-on px-3 py-1.5 text-xs" : "pill-off px-3 py-1.5 text-xs"}>Presente</button>
@@ -160,7 +161,7 @@ function SwapModal({ session, teachers, onClose, onDone }: { session: ClassSessi
   const [teacher, setTeacher] = useState(session.teacher_id || "");
   return (
     <Modal title="Professor(a) desta aula" onClose={onClose} width="max-w-md"
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || teacher === (session.teacher_id || "")}
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || teacher === (session.teacher_id || "")}
         onClick={async () => { const r = await run(() => api.updateSession(session.id, { teacher_id: teacher || "00000000-0000-0000-0000-000000000000" }), "Professor(a) atualizado(a)"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
       <p className="text-sm text-ink-300">Vale só para esta aula. Quem reservou e a nova pessoa são avisados. O sistema não deixa escalar alguém que já tenha aula no mesmo horário.</p>
       <Field label="Professor(a)">
@@ -180,7 +181,7 @@ function NewSessionModal({ teachers, onClose, onDone }: { teachers: { id: string
   const [f, setF] = useState({ modality_id: "", teacher_id: "", title: "", date: isoDate(), start_time: "18:00", duration_min: 60, capacity: 15, room: "", notes: "" });
   return (
     <Modal title="Aula avulsa / aulão" onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || !f.modality_id}
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || !f.modality_id}
         onClick={async () => { const r = await run(() => api.createSession({ ...f, teacher_id: f.teacher_id || null }), "Aula criada"); if (r) { onDone(); onClose(); } }}>Criar</button></>}>
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Modalidade"><select className="field" value={f.modality_id} onChange={(e) => setF({ ...f, modality_id: e.target.value })}><option value="">Escolha…</option>{mods.data?.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></Field>
@@ -213,7 +214,7 @@ function Schedules({ manage, teachers, onChanged }: { manage: boolean; teachers:
   if (loading && !data) return <Loading />;
   return (
     <div className="space-y-4">
-      {manage && <div className="flex justify-end"><button className="btn-lime" onClick={() => setEdit({ weekday: 1, start_time: "18:00", duration_min: 60, capacity: 15 })}><Repeat className="w-4 h-4" />Nova turma fixa</button></div>}
+      {manage && <div className="flex justify-end"><button className="btn-brand" onClick={() => setEdit({ weekday: 1, start_time: "18:00", duration_min: 60, capacity: 15 })}><Repeat className="w-4 h-4" />Nova turma fixa</button></div>}
       {(data || []).length === 0 ? <div className="card"><Empty title="Nenhuma turma fixa">As turmas se repetem toda semana e geram as aulas automaticamente.</Empty></div> : (
         [1, 2, 3, 4, 5, 6, 0].filter((d) => grouped[d]).map((d) => (
           <section key={d} className="card p-4">
@@ -221,7 +222,7 @@ function Schedules({ manage, teachers, onChanged }: { manage: boolean; teachers:
             <ul className="space-y-2">
               {grouped[d].map((s) => (
                 <li key={s.id} className="card-soft p-3 flex flex-wrap items-center gap-3">
-                  <span className="w-1.5 self-stretch rounded-full" style={{ background: s.modality?.color || "#D7FF3A" }} />
+                  <span className="w-1.5 self-stretch rounded-full" style={{ background: s.modality?.color || BRAND }} />
                   <div className="w-16 text-sm font-semibold text-white">{s.start_time}</div>
                   <div className="flex-1 min-w-[150px]"><div className="text-sm text-white">{s.modality?.name} · {s.duration_min}min</div><div className="text-xs text-ink-300">{s.teacher?.name || "Sem professor(a)"} · {s.capacity} vagas{s.room ? ` · ${s.room}` : ""}</div></div>
                   {manage && <div className="flex gap-2"><button className="btn-dark px-3 py-2 text-xs" onClick={() => setEdit(s)}>Editar</button><button className="btn-ghost px-3 py-2 text-xs" onClick={() => setDel(s)}>Encerrar</button></div>}
@@ -233,7 +234,7 @@ function Schedules({ manage, teachers, onChanged }: { manage: boolean; teachers:
       )}
       {edit && <ScheduleModal initial={edit} teachers={teachers} onClose={() => setEdit(null)} onDone={refresh} />}
       {del && <ConfirmDialog title="Encerrar turma" danger confirmLabel="Encerrar turma" busy={busy}
-        message={`${WEEKDAYS[del.weekday]} ${del.start_time} — ${del.modality?.name}. As aulas futuras sem reserva são removidas; as que têm reserva são canceladas e os alunos avisados.`}
+        message={`${WEEKDAYS[del.weekday]} ${del.start_time} — ${del.modality?.name}. As aulas futuras sem reserva são removidas; as que têm reserva são canceladas e as alunas avisados.`}
         onClose={() => setDel(null)} onConfirm={async () => { const r = await run(() => api.deleteSchedule(del.id), "Turma encerrada"); if (r !== undefined) { setDel(null); refresh(); } }} />}
     </div>
   );
@@ -250,7 +251,7 @@ function ScheduleModal({ initial, teachers, onClose, onDone }: { initial: Partia
   };
   return (
     <Modal title={initial.id ? "Editar turma fixa" : "Nova turma fixa"} onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || !f.modality_id} onClick={save}>Salvar</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || !f.modality_id} onClick={save}>Salvar</button></>}>
       {initial.id && <p className="text-xs text-ink-300">Mudar dia ou horário recria as aulas futuras e avisa quem tinha reserva.</p>}
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Modalidade"><select className="field" value={f.modality_id} onChange={(e) => setF({ ...f, modality_id: e.target.value })}><option value="">Escolha…</option>{mods.data?.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></Field>

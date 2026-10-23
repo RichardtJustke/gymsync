@@ -16,9 +16,10 @@ import { Invoice, Workout, WorkoutPlan, Exercise, Booking, ClassSession, Physica
 import QrScanner from "@/components/QrScanner";
 import { Modal } from "@/components/ui";
 import { brl, dateTimeBR, timeBR, isoDate, monthKey, monthLabel, WEEKDAYS } from "@/lib/format";
-import { Avatar, Empty, Notice, Ring, WeekStrip, Bars } from "@/components/ui";
+import { Avatar, Empty, Notice, Ring, WeekStrip, Bars, Dock } from "@/components/ui";
 import { IMG } from "@/lib/images";
 import { useToast } from "@/context/ToastContext";
+import { BRAND } from "@/lib/brand";
 
 export default function AlunoPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function AlunoPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"workout" | "agenda" | "finance" | "checkin" | "progress" | "profile">("workout");
 
-  // Dados do Aluno
+  // Dados da Aluna
   const [planData, setPlanData] = useState<{ has_plan: boolean; student: any; plan: WorkoutPlan | null } | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [selectedWorkoutIndex, setSelectedWorkoutIndex] = useState(0);
@@ -490,22 +491,54 @@ export default function AlunoPage() {
   const openInvoices = invoices.filter((i) => i.status !== "PAGO");
   const openTotal = openInvoices.reduce((s, i) => s + (i.amount - i.discount), 0);
   const firstName = planData?.student?.user?.name?.split(" ")[0] || "Atleta";
+
+  const tabs = [
+    { id: "workout" as const, label: "Treino", icon: <Dumbbell className="w-4 h-4" /> },
+    { id: "agenda" as const, label: "Aulas", icon: <Calendar className="w-4 h-4" /> },
+    { id: "progress" as const, label: "Progresso", icon: <TrendingUp className="w-4 h-4" /> },
+    { id: "finance" as const, label: "Faturas", icon: <CreditCard className="w-4 h-4" /> },
+    { id: "checkin" as const, label: "Entrada", icon: <QrCode className="w-4 h-4" /> },
+    { id: "profile" as const, label: "Perfil", icon: <User className="w-4 h-4" /> },
+  ];
   const fmtTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const heightM = (editHeight || 178) / 100;
   const imc = heightM > 0 ? (editWeight / (heightM * heightM)).toFixed(1) : "22.5";
 
   return (
-    <div className="flex-1 max-w-xl w-full mx-auto px-4 pt-6 pb-36 space-y-6">
+    <div className="flex-1 max-w-xl lg:max-w-7xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-dock lg:pb-12 lg:flex lg:gap-8">
+      {/* Barra lateral (desktop) */}
+      <aside className="hidden lg:block w-60 shrink-0">
+        <nav className="sticky top-28 p-2 rounded-4xl bg-ink-850 border border-white/[0.05] space-y-1">
+          {tabs.map((t) => {
+            const on = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-full text-sm transition-all ${
+                  on ? "bg-brand text-black font-bold shadow-glow" : "text-ink-300 hover:text-white hover:bg-ink-750 font-medium"
+                }`}
+              >
+                {t.icon}
+                {t.label}
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <div className="flex-1 min-w-0 space-y-6">
       {/* Cabeçalho estilo App */}
-      <div className="flex items-center justify-between animate-fade-up">
+      <div className="space-y-6 lg:space-y-0 lg:flex lg:items-center lg:justify-between lg:gap-8">
+      <div className="flex items-center justify-between gap-4 animate-fade-up">
         <div className="flex items-center gap-3">
           <button onClick={() => setActiveTab("profile")} className="text-left group">
             <Avatar name={planData?.student?.user?.name} size={52} />
           </button>
           <div>
             <div className="text-lg font-semibold text-white leading-tight flex items-center gap-2">
-              Olá, {firstName} 👋
+              Olá, {firstName}
             </div>
             <div className="text-sm text-ink-300">Pronto para treinar hoje?</div>
           </div>
@@ -514,14 +547,17 @@ export default function AlunoPage() {
         <div className="flex items-center gap-2">
           {planData?.student && (
             <span className={planData.student.status === "ATIVO" ? "badge-ok" : "badge-bad"}>
-              <span className={`w-1.5 h-1.5 rounded-full ${planData.student.status === "ATIVO" ? "bg-lime" : "bg-[#FF7A5C]"}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${planData.student.status === "ATIVO" ? "bg-brand" : "bg-[#FF7A5C]"}`} />
               {planData.student.status}
             </span>
           )}
         </div>
       </div>
 
-      <WeekStrip />
+      <div className="lg:w-[26rem] lg:shrink-0">
+        <WeekStrip />
+      </div>
+      </div>
 
       {loading && !planData && (
         <div className="space-y-3">
@@ -535,19 +571,20 @@ export default function AlunoPage() {
       {activeTab === "workout" && planData && (
         <div className="space-y-6">
           {planData.has_plan && planData.plan ? (
-            <>
+            <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-6 lg:items-start">
+              <div className="space-y-6 lg:sticky lg:top-28">
               {/* Card Hero do Treino do Dia */}
-              <div className="relative h-64 rounded-4xl overflow-hidden animate-fade-up group">
+              <div className="on-photo relative h-64 lg:h-80 rounded-4xl overflow-hidden animate-fade-up group">
                 <img src={IMG.kettlebell} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                 <div className="absolute top-4 left-4 flex items-center gap-2">
                   <span className="badge bg-black/50 backdrop-blur text-white">{planData.plan.title}</span>
-                  <span className="badge bg-lime/20 text-lime font-semibold">Ativo</span>
+                  <span className="badge bg-brand/20 text-brand font-semibold">Ativo</span>
                 </div>
 
                 <div className="absolute bottom-0 inset-x-0 p-5 flex items-end justify-between gap-4">
                   <div>
-                    <div className="text-xs text-lime font-semibold mb-1">Treino {activeWorkout?.letter}</div>
+                    <div className="text-xs text-brand font-semibold mb-1">Treino {activeWorkout?.letter}</div>
                     <div className="text-2xl font-semibold text-white leading-tight">{activeWorkout?.name}</div>
                     <div className="text-xs text-ink-200 mt-1.5 flex items-center gap-3">
                       <span className="flex items-center gap-1"><Layers className="w-3.5 h-3.5" /> {totalCount} exercícios</span>
@@ -566,7 +603,7 @@ export default function AlunoPage() {
               <div className="animate-fade-up">
                 <button
                   onClick={startFocusSession}
-                  className="btn-lime w-full !py-4 text-base font-bold shadow-glow flex items-center justify-center gap-3 group"
+                  className="btn-brand w-full !py-4 text-base font-bold shadow-glow flex items-center justify-center gap-3 group"
                 >
                   <Play className="w-5 h-5 fill-current transition-transform group-hover:scale-110" />
                   <span>Iniciar Sessão de Treino Guiada</span>
@@ -574,14 +611,14 @@ export default function AlunoPage() {
               </div>
 
               {/* Seletor de Divisões (A, B, C...) */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 lg:flex-wrap">
                 {planData.plan.workouts.map((w, idx) => (
                   <button
                     key={w.id}
                     onClick={() => setSelectedWorkoutIndex(idx)}
                     className={selectedWorkoutIndex === idx ? "pill-on" : "pill-off"}
                   >
-                    <span className={`w-6 h-6 -ml-2 rounded-full flex items-center justify-center text-xs font-bold ${selectedWorkoutIndex === idx ? "bg-black text-lime" : "bg-ink-600 text-white"}`}>
+                    <span className={`w-6 h-6 -ml-2 rounded-full flex items-center justify-center text-xs font-bold ${selectedWorkoutIndex === idx ? "bg-black text-brand" : "bg-ink-600 text-white"}`}>
                       {w.letter}
                     </span>
                     {w.name}
@@ -597,7 +634,7 @@ export default function AlunoPage() {
                   { k: "Tempo Est.", v: `${estMinutes}m`, icon: <Clock className="w-4 h-4" /> },
                 ].map((m) => (
                   <div key={m.k} className="card p-3.5">
-                    <div className="flex items-center gap-1.5 text-lime text-[11px] font-medium">
+                    <div className="flex items-center gap-1.5 text-brand text-[11px] font-medium">
                       {m.icon}
                       <span className="text-ink-300">{m.k}</span>
                     </div>
@@ -606,13 +643,15 @@ export default function AlunoPage() {
                 ))}
               </div>
 
+              </div>
+
               {/* Lista de Exercícios */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="section-title">Exercícios da Ficha</h3>
                   <button
                     onClick={() => setShow1RMModal(true)}
-                    className="text-xs text-lime flex items-center gap-1 hover:underline font-semibold"
+                    className="text-xs text-brand flex items-center gap-1 hover:underline font-semibold"
                   >
                     <BarChart2 className="w-3.5 h-3.5" /> Calculadora 1RM
                   </button>
@@ -628,11 +667,11 @@ export default function AlunoPage() {
                       return (
                         <div
                           key={it.id}
-                          className={`rounded-3xl p-4 transition-all animate-fade-up ${isDone ? "bg-lime text-black shadow-glow" : "bg-ink-800 border border-white/[0.04]"}`}
+                          className={`rounded-3xl p-4 transition-all animate-fade-up ${isDone ? "bg-brand text-black shadow-glow" : "bg-ink-800 border border-white/[0.04]"}`}
                           style={{ animationDelay: `${idx * 40}ms` }}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-base font-bold ${isDone ? "bg-black/10" : "bg-ink-700 text-lime"}`}>
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-base font-bold ${isDone ? "bg-black/10" : "bg-ink-700 text-brand"}`}>
                               {String(idx + 1).padStart(2, "0")}
                             </div>
 
@@ -644,7 +683,7 @@ export default function AlunoPage() {
                                 {it.exercise?.video_url && (
                                   <button
                                     onClick={() => it.exercise && setViewExercise(it.exercise)}
-                                    className={`p-1 rounded-full ${isDone ? "bg-black/10 text-black" : "bg-ink-700 text-lime hover:bg-lime hover:text-black"} transition-colors`}
+                                    className={`p-1 rounded-full ${isDone ? "bg-black/10 text-black" : "bg-ink-700 text-brand hover:bg-brand hover:text-black"} transition-colors`}
                                     title="Assistir execução"
                                   >
                                     <Video className="w-3.5 h-3.5" />
@@ -667,7 +706,7 @@ export default function AlunoPage() {
 
                             <button
                               onClick={() => toggleItemComplete(it.id, it.rest_seconds)}
-                              className={`btn-icon shrink-0 ${isDone ? "bg-black text-lime" : "bg-ink-700 text-ink-300 hover:bg-lime hover:text-black"}`}
+                              className={`btn-icon shrink-0 ${isDone ? "bg-black text-brand" : "bg-ink-700 text-ink-300 hover:bg-brand hover:text-black"}`}
                               title={isDone ? "Desmarcar" : "Concluir exercício"}
                             >
                               <Check className="w-5 h-5" strokeWidth={2.6} />
@@ -704,7 +743,7 @@ export default function AlunoPage() {
                               onClick={() => startRestTimer(it.rest_seconds || 60)}
                               className={`flex items-center gap-1.5 pl-1 pr-3.5 py-1 rounded-full text-xs font-semibold ${isDone ? "bg-black text-white" : "bg-ink-750 text-white hover:bg-ink-700"}`}
                             >
-                              <span className="w-8 h-8 rounded-full bg-lime text-black flex items-center justify-center">
+                              <span className="w-8 h-8 rounded-full bg-brand text-black flex items-center justify-center">
                                 <Play className="w-3.5 h-3.5 fill-current" />
                               </span>
                               {it.rest_seconds}s
@@ -722,7 +761,7 @@ export default function AlunoPage() {
                                     onClick={() => toggleSetComplete(it.id, sIdx, it.rest_seconds)}
                                     className={`px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 transition-all ${
                                       s.done
-                                        ? isDone ? "bg-black text-lime" : "bg-lime text-black"
+                                        ? isDone ? "bg-black text-brand" : "bg-brand text-black"
                                         : isDone ? "bg-black/15 text-black" : "bg-ink-700 text-ink-300 hover:text-white"
                                     }`}
                                   >
@@ -749,7 +788,7 @@ export default function AlunoPage() {
                   </div>
                 )}
               </div>
-            </>
+            </div>
           ) : (
             <div className="card">
               <Empty icon={<Dumbbell className="w-6 h-6" />} title="Nenhum treino prescrito ainda">
@@ -762,7 +801,8 @@ export default function AlunoPage() {
 
       {/* ABA: PROGRESSO, CALENDÁRIO, HIDRATAÇÃO & CONQUISTAS */}
       {activeTab === "progress" && planData && (
-        <div className="space-y-6 animate-fade-up">
+        <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start animate-fade-up">
+          <div className="space-y-6">
           {/* Widget de Hidratação Diária */}
           <div className="card p-5 space-y-4">
             <div className="flex items-center justify-between">
@@ -830,7 +870,7 @@ export default function AlunoPage() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-semibold text-white">{monthLabel(monthKey())}</h4>
-                    <span className="text-xs text-lime font-semibold">{freq?.month_count ?? 0} dia(s) de treino</span>
+                    <span className="text-xs text-brand font-semibold">{freq?.month_count ?? 0} dia(s) de treino</span>
                   </div>
                   <div className="grid grid-cols-7 gap-1.5 text-center text-xs">
                     {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
@@ -842,7 +882,7 @@ export default function AlunoPage() {
                       const isPresent = present.includes(day);
                       const isToday = day === now.getDate();
                       return (
-                        <div key={day} className={`h-9 rounded-xl flex items-center justify-center font-semibold text-xs transition-all ${isPresent ? "bg-lime text-black font-bold shadow-glow" : isToday ? "border border-lime text-white" : "bg-ink-750 text-ink-300"}`}>
+                        <div key={day} className={`h-9 rounded-xl flex items-center justify-center font-semibold text-xs transition-all ${isPresent ? "bg-brand text-black font-bold shadow-glow" : isToday ? "border border-brand text-white" : "bg-ink-750 text-ink-300"}`}>
                           {day}
                         </div>
                       );
@@ -853,12 +893,15 @@ export default function AlunoPage() {
             })()}
           </div>
 
+          </div>
+
+          <div className="space-y-6">
           {/* Medidas Físicas, Composição e Histórico */}
           <div className="card p-6 space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="section-title flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-lime" /> Evolução Corporal & Medidas
+                  <TrendingUp className="w-4 h-4 text-brand" /> Evolução Corporal & Medidas
                 </h3>
                 <p className="text-xs text-ink-300 mt-0.5">Acompanhamento contínuo dos seus resultados</p>
               </div>
@@ -871,7 +914,7 @@ export default function AlunoPage() {
                   }));
                   setShowMyMeasurementModal(true);
                 }}
-                className="btn-lime !py-1.5 !px-3.5 text-xs font-bold shadow-glow"
+                className="btn-brand !py-1.5 !px-3.5 text-xs font-bold shadow-glow"
               >
                 + Nova Medição
               </button>
@@ -897,7 +940,7 @@ export default function AlunoPage() {
               </div>
               <div className="p-3.5 rounded-2xl bg-ink-750">
                 <div className="text-xs text-ink-300">IMC Estimado</div>
-                <div className="text-xl font-bold text-lime mt-1">{imc}</div>
+                <div className="text-xl font-bold text-brand mt-1">{imc}</div>
               </div>
               <div className="p-3.5 rounded-2xl bg-ink-750">
                 <div className="text-xs text-ink-300">% Gordura</div>
@@ -927,7 +970,7 @@ export default function AlunoPage() {
                       </div>
                       <div className="flex items-center gap-4 text-ink-300">
                         <span>Peso: <strong className="text-white">{a.weight}kg</strong></span>
-                        {a.body_fat > 0 && <span>Gordura: <strong className="text-lime">{a.body_fat}%</strong></span>}
+                        {a.body_fat > 0 && <span>Gordura: <strong className="text-brand">{a.body_fat}%</strong></span>}
                         {a.waist > 0 && <span>Cintura: <strong className="text-white">{a.waist}cm</strong></span>}
                         {a.chest > 0 && <span>Tórax: <strong className="text-white">{a.chest}cm</strong></span>}
                       </div>
@@ -946,7 +989,7 @@ export default function AlunoPage() {
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { title: "Primeiro Treino", desc: "Completou o 1º treino", unlocked: true, icon: <CheckCircle2 className="w-5 h-5 text-lime" /> },
+                { title: "Primeiro Treino", desc: "Completou o 1º treino", unlocked: true, icon: <CheckCircle2 className="w-5 h-5 text-brand" /> },
                 { title: "Fogo Constante", desc: "7 dias seguidos", unlocked: true, icon: <Flame className="w-5 h-5 text-[#FF5A36]" /> },
                 { title: "10 Toneladas", desc: "10.000kg levantados", unlocked: true, icon: <Award className="w-5 h-5 text-amber-400" /> },
                 { title: "Frequência 100%", desc: "Bateu meta do mês", unlocked: false, icon: <Trophy className="w-5 h-5 text-ink-400" /> },
@@ -966,13 +1009,14 @@ export default function AlunoPage() {
               ))}
             </div>
           </div>
+          </div>
         </div>
       )}
 
       {/* ABA: FATURAS E MENSALIDADES */}
       {activeTab === "finance" && planData && (
-        <div className="space-y-5 animate-fade-up">
-          <div className={`rounded-4xl p-6 ${openInvoices.length ? "bg-ink-800 border border-white/[0.04]" : "bg-lime text-black"}`}>
+        <div className="space-y-5 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6 lg:items-start animate-fade-up">
+          <div className={`lg:sticky lg:top-28 rounded-4xl p-6 ${openInvoices.length ? "bg-ink-800 border border-white/[0.04]" : "bg-brand text-black"}`}>
             <div className="flex items-center justify-between">
               <span className={`text-sm font-medium flex items-center gap-2 ${openInvoices.length ? "text-ink-200" : "text-black/70"}`}>
                 <Wallet className="w-4 h-4" /> Em aberto
@@ -998,7 +1042,7 @@ export default function AlunoPage() {
                   return (
                     <div key={inv.id} className="card p-4 space-y-4 animate-fade-up">
                       <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${paid ? "bg-lime/15 text-lime" : "bg-[#FF5A36]/15 text-[#FF7A5C]"}`}>
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${paid ? "bg-brand/15 text-brand" : "bg-[#FF5A36]/15 text-[#FF7A5C]"}`}>
                           {paid ? <CheckCircle2 className="w-5 h-5" /> : <CreditCard className="w-5 h-5" />}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1017,11 +1061,11 @@ export default function AlunoPage() {
                         <div className="space-y-2">
                           <div className="grid grid-cols-2 gap-2">
                             <button onClick={() => handleBoleto(inv.id)} className="btn-dark !py-2.5 text-xs">
-                              <ExternalLink className="w-3.5 h-3.5 text-lime" />
+                              <ExternalLink className="w-3.5 h-3.5 text-brand" />
                               Boleto
                             </button>
                             <button onClick={() => handleCopyPix(inv.pix_copy_paste)} className="btn-dark !py-2.5 text-xs">
-                              <Copy className="w-3.5 h-3.5 text-lime" />
+                              <Copy className="w-3.5 h-3.5 text-brand" />
                               {copiedPix ? "Copiado!" : "Copiar PIX"}
                             </button>
                           </div>
@@ -1030,7 +1074,7 @@ export default function AlunoPage() {
                             <button
                               onClick={() => handleSimulatePayment(inv.id)}
                               disabled={payingInvoiceId === inv.id}
-                              className="btn-lime w-full !py-3 text-xs"
+                              className="btn-brand w-full !py-3 text-xs"
                             >
                               <Sparkles className="w-4 h-4" />
                               {payingInvoiceId === inv.id ? "Confirmando..." : "Simular pagamento (ambiente de teste)"}
@@ -1053,7 +1097,7 @@ export default function AlunoPage() {
 
       {/* ABA: CHECK-IN / ENTRADA NA ACADEMIA */}
       {activeTab === "checkin" && planData && (
-        <div className="space-y-4 animate-fade-up">
+        <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start animate-fade-up">
           <div className="card p-5 animate-fade-up">
             <div className="flex items-center gap-4 pb-5 border-b border-white/5">
               <div className="w-14 h-14 rounded-full bg-[#FF5A36]/15 flex items-center justify-center shadow-[0_0_30px_rgba(255,90,54,0.35)]">
@@ -1075,7 +1119,7 @@ export default function AlunoPage() {
                 return (
                   <div key={d} className="flex flex-col items-center gap-2">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${done ? "bg-lime text-black shadow-glow" : isToday ? "border-2 border-lime" : "bg-ink-700"}`}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${done ? "bg-brand text-black shadow-glow" : isToday ? "border-2 border-brand" : "bg-ink-700"}`}
                     >
                       {done && <Check className="w-5 h-5 stroke-[3]" />}
                     </div>
@@ -1092,7 +1136,7 @@ export default function AlunoPage() {
             ) : (
               <>
                 <p className="text-sm text-ink-300">Escaneie o QR Code que aparece na tela da recepção. O código muda a cada poucos segundos.</p>
-                <button onClick={() => setScanning(true)} className="btn-lime w-full !py-4 font-bold shadow-glow" disabled={checkingIn}>
+                <button onClick={() => setScanning(true)} className="btn-brand w-full !py-4 font-bold shadow-glow" disabled={checkingIn}>
                   <QrCode className="w-5 h-5" />
                   Escanear QR da recepção
                 </button>
@@ -1120,9 +1164,10 @@ export default function AlunoPage() {
           {bookings.length > 0 && (
             <section className="space-y-2">
               <h3 className="section-title">Minhas reservas</h3>
+              <div className="grid gap-2 md:grid-cols-2">
               {bookings.map((b) => (
                 <div key={b.id} className="card p-4 flex items-center gap-3">
-                  <span className="w-1.5 self-stretch rounded-full" style={{ background: b.session?.modality?.color || "#D7FF3A" }} />
+                  <span className="w-1.5 self-stretch rounded-full" style={{ background: b.session?.modality?.color || BRAND }} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-white truncate">{b.session?.title || b.session?.modality?.name}</div>
                     <div className="text-xs text-ink-300">{dateTimeBR(b.session?.starts_at)}{b.session?.teacher ? ` · ${b.session.teacher.name}` : ""}</div>
@@ -1130,6 +1175,7 @@ export default function AlunoPage() {
                   <span className={b.status === "ESPERA" ? "badge bg-amber-400/15 text-amber-300" : "badge-ok"}>{b.status === "ESPERA" ? "Lista de espera" : b.status === "PRESENTE" ? "Presente" : "Confirmada"}</span>
                 </div>
               ))}
+              </div>
             </section>
           )}
 
@@ -1148,13 +1194,14 @@ export default function AlunoPage() {
               ).map(([day, list]) => (
                 <div key={day} className="space-y-2">
                   <div className="eyebrow pt-1">{WEEKDAYS[new Date(day + "T12:00:00").getDay()]}, {new Date(day + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</div>
+                  <div className="grid gap-2 md:grid-cols-2">
                   {list.map((c) => {
                     const mine = c.my_status === "CONFIRMADA" || c.my_status === "ESPERA" || c.my_status === "PRESENTE";
                     const full = (c.booked ?? 0) >= c.capacity;
                     const started = new Date(c.starts_at) <= new Date();
                     return (
                       <div key={c.id} className="card p-4 flex items-center gap-3">
-                        <span className="w-1.5 self-stretch rounded-full" style={{ background: c.modality?.color || "#D7FF3A" }} />
+                        <span className="w-1.5 self-stretch rounded-full" style={{ background: c.modality?.color || BRAND }} />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-semibold text-white truncate">{c.title || c.modality?.name}</div>
                           <div className="text-xs text-ink-300">{timeBR(c.starts_at)}–{timeBR(c.ends_at)}{c.teacher ? ` · ${c.teacher.name}` : ""}</div>
@@ -1164,11 +1211,12 @@ export default function AlunoPage() {
                           c.my_status === "PRESENTE" ? <span className="badge-ok">Presente</span> :
                           <button className="btn-dark !px-4 !py-2 text-xs" disabled={busySession === c.id || started} onClick={() => handleCancelBooking(c)}>{busySession === c.id ? "…" : c.my_status === "ESPERA" ? "Sair da fila" : "Cancelar"}</button>
                         ) : (
-                          <button className="btn-lime !px-4 !py-2 text-xs" disabled={busySession === c.id || started} onClick={() => handleBook(c)}>{busySession === c.id ? "…" : full ? "Entrar na fila" : "Reservar"}</button>
+                          <button className="btn-brand !px-4 !py-2 text-xs" disabled={busySession === c.id || started} onClick={() => handleBook(c)}>{busySession === c.id ? "…" : full ? "Entrar na fila" : "Reservar"}</button>
                         )}
                       </div>
                     );
                   })}
+                  </div>
                 </div>
               ))
             )}
@@ -1178,14 +1226,14 @@ export default function AlunoPage() {
 
       {/* ABA: PERFIL & MEDIDAS */}
       {activeTab === "profile" && planData && (
-        <div className="space-y-5 animate-fade-up">
+        <div className="space-y-5 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start animate-fade-up">
           <div className="card p-6 space-y-5">
             <div className="flex items-center gap-4 pb-4 border-b border-white/5">
               <Avatar name={planData.student?.user?.name} size={64} />
               <div>
                 <h3 className="text-lg font-bold text-white">{planData.student?.user?.name}</h3>
                 <div className="text-xs text-ink-300">{planData.student?.user?.email}</div>
-                <div className="text-xs text-lime mt-1 font-semibold">
+                <div className="text-xs text-brand mt-1 font-semibold">
                   Plano: {planData.student?.plan_name} (R$ {planData.student?.plan_price?.toFixed(2)}/mês)
                 </div>
               </div>
@@ -1229,13 +1277,14 @@ export default function AlunoPage() {
               <button
                 onClick={handleSaveProfile}
                 disabled={savingProfile}
-                className="btn-lime w-full !py-3.5"
+                className="btn-brand w-full !py-3.5"
               >
                 {savingProfile ? "Salvando..." : "Salvar Dados do Perfil"}
               </button>
             </div>
           </div>
 
+          <div className="space-y-5">
           <div className="card p-6 space-y-3">
             <h4 className="text-sm font-semibold text-white">Alterar senha</h4>
             <input type="password" autoComplete="current-password" placeholder="Senha atual" className="field" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} />
@@ -1250,7 +1299,7 @@ export default function AlunoPage() {
           <div className="card p-6 space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-lime/15 text-lime flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-brand/15 text-brand flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
@@ -1258,7 +1307,7 @@ export default function AlunoPage() {
                   <p className="text-[11px] text-ink-300">Conforme a LGPD (Lei 13.709/2018)</p>
                 </div>
               </div>
-              <span className="pill bg-lime/10 text-lime text-[11px] font-bold">Art. 18 LGPD</span>
+              <span className="pill bg-brand/10 text-brand text-[11px] font-bold">Art. 18 LGPD</span>
             </div>
 
             <p className="text-xs text-ink-200 leading-relaxed">
@@ -1268,7 +1317,7 @@ export default function AlunoPage() {
             <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
               <button
                 onClick={handleExportLGPD}
-                className="btn-dark flex-1 flex items-center justify-center gap-2 !py-3 text-xs text-lime border-lime/30 hover:bg-lime/10 transition-colors"
+                className="btn-dark flex-1 flex items-center justify-center gap-2 !py-3 text-xs text-brand border-brand/30 hover:bg-brand/10 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Exportar Meus Dados (JSON)
@@ -1289,17 +1338,19 @@ export default function AlunoPage() {
             <p className="text-xs text-ink-300">Seus dados pessoais são apagados e o acesso encerrado. Reservas futuras são canceladas. Não dá para desfazer.</p>
             <button className="btn bg-[#FF5A36]/15 text-[#FF7A5C] w-full py-3" onClick={() => setShowDelete(true)}>Excluir conta</button>
           </div>
+          </div>
         </div>
       )}
+      </div>
 
       {/* MODAL: SUBSTITUIÇÃO DE APARELHO OCUPADO */}
       {swapModalItem && (
-        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-ink-850 border border-white/10 rounded-4xl max-w-md w-full p-6 space-y-4 shadow-card animate-fade-up">
+        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-ink-850 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-4xl max-w-md w-full p-6 space-y-4 shadow-card animate-fade-up max-h-[92vh] overflow-y-auto pb-safe sm:pb-6">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Shuffle className="w-5 h-5 text-lime" /> Aparelho Ocupado?
+                  <Shuffle className="w-5 h-5 text-brand" /> Aparelho Ocupado?
                 </h3>
                 <p className="text-xs text-ink-300 mt-0.5">
                   Substitutos para: <b>{swapModalItem.currentExercise.name}</b>
@@ -1322,13 +1373,13 @@ export default function AlunoPage() {
                   <button
                     key={alt.id}
                     onClick={() => handleSwapExercise(alt)}
-                    className="w-full text-left p-3 rounded-2xl bg-ink-750 hover:bg-lime hover:text-black transition-all flex items-center justify-between group"
+                    className="w-full text-left p-3 rounded-2xl bg-ink-750 hover:bg-brand hover:text-black transition-all flex items-center justify-between group"
                   >
                     <div>
                       <div className="text-sm font-semibold text-white group-hover:text-black">{alt.name}</div>
                       <div className="text-xs text-ink-300 group-hover:text-black/70">{alt.equipment}</div>
                     </div>
-                    <span className="badge-ok group-hover:bg-black group-hover:text-lime">Substituir</span>
+                    <span className="badge-ok group-hover:bg-black group-hover:text-brand">Substituir</span>
                   </button>
                 ))}
             </div>
@@ -1342,11 +1393,11 @@ export default function AlunoPage() {
 
       {/* MODAL: CALCULADORA DE 1RM & RECORDES */}
       {show1RMModal && (
-        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-ink-850 border border-white/10 rounded-4xl max-w-md w-full p-6 space-y-5 shadow-card animate-fade-up">
+        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-ink-850 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-4xl max-w-md w-full p-6 space-y-5 shadow-card animate-fade-up max-h-[92vh] overflow-y-auto pb-safe sm:pb-6">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-lime" /> Calculadora de Força (1RM)
+                <BarChart2 className="w-5 h-5 text-brand" /> Calculadora de Força (1RM)
               </h3>
               <button onClick={() => setShow1RMModal(false)} className="btn-icon w-8 h-8 bg-ink-700 text-white">
                 <X className="w-4 h-4" />
@@ -1393,14 +1444,14 @@ export default function AlunoPage() {
               </div>
 
               {/* Resultado 1RM Estimada */}
-              <div className="card p-4 bg-lime text-black flex items-center justify-between rounded-3xl">
+              <div className="card p-4 bg-brand text-black flex items-center justify-between rounded-3xl">
                 <div>
                   <div className="text-xs font-semibold text-black/70">1RM Estimada (Carga Máxima)</div>
                   <div className="text-3xl font-black">{calculated1RM} kg</div>
                 </div>
                 <button
                   onClick={handleSavePr}
-                  className="btn bg-black text-lime hover:bg-black/80 !px-4 !py-2 text-xs font-bold"
+                  className="btn bg-black text-brand hover:bg-black/80 !px-4 !py-2 text-xs font-bold"
                 >
                   Salvar PR 🏆
                 </button>
@@ -1434,7 +1485,7 @@ export default function AlunoPage() {
                     <div key={i} className="p-2.5 rounded-xl bg-ink-750 flex items-center justify-between text-xs">
                       <span className="text-white font-medium">{pr.exercise}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-lime font-bold">{pr.pr} kg</span>
+                        <span className="text-brand font-bold">{pr.pr} kg</span>
                         <span className="text-[10px] text-ink-400">{pr.date}</span>
                       </div>
                     </div>
@@ -1452,15 +1503,15 @@ export default function AlunoPage() {
 
       {/* MODAL FULLSCREEN: MODO TREINO EM ANDAMENTO (FOCUS MODE) */}
       {inFocusMode && activeWorkout && (
-        <div className="fixed inset-0 z-[70] bg-ink-950 flex flex-col p-4 sm:p-6 overflow-y-auto animate-fade-up">
+        <div className="fixed inset-0 z-[70] bg-ink-950 flex flex-col px-4 sm:px-6 pt-safe pb-safe sm:p-6 overflow-y-auto animate-fade-up">
           <div className="max-w-xl w-full mx-auto flex items-center justify-between pb-4 border-b border-white/10">
             <div>
-              <span className="badge bg-lime text-black font-bold">EM ANDAMENTO</span>
+              <span className="badge bg-brand text-black font-bold">EM ANDAMENTO</span>
               <h3 className="text-xl font-bold text-white mt-1">Treino {activeWorkout.letter}: {activeWorkout.name}</h3>
             </div>
             <div className="text-right">
               <div className="text-xs text-ink-300 font-medium">Tempo de Sessão</div>
-              <div className="text-2xl font-bold font-mono text-lime">{fmtTime(sessionSeconds)}</div>
+              <div className="text-2xl font-bold font-mono text-brand">{fmtTime(sessionSeconds)}</div>
             </div>
           </div>
 
@@ -1488,7 +1539,7 @@ export default function AlunoPage() {
                     {activeWorkout.items[focusItemIndex].exercise?.video_url && (
                       <button
                         onClick={() => setViewExercise(activeWorkout.items[focusItemIndex].exercise!)}
-                        className="text-xs font-semibold text-lime flex items-center gap-1 hover:underline"
+                        className="text-xs font-semibold text-brand flex items-center gap-1 hover:underline"
                       >
                         <Video className="w-4 h-4" /> Execução
                       </button>
@@ -1505,7 +1556,7 @@ export default function AlunoPage() {
                   </div>
 
                   {activeWorkout.items[focusItemIndex].notes && (
-                    <div className="text-xs text-lime bg-lime/10 p-3 rounded-2xl">
+                    <div className="text-xs text-brand bg-brand/10 p-3 rounded-2xl">
                       💡 {activeWorkout.items[focusItemIndex].notes}
                     </div>
                   )}
@@ -1516,7 +1567,7 @@ export default function AlunoPage() {
                       <div
                         key={sIdx}
                         className={`p-3 rounded-2xl flex items-center justify-between gap-3 transition-colors ${
-                          s.done ? "bg-lime text-black font-semibold" : "bg-ink-750 text-white"
+                          s.done ? "bg-brand text-black font-semibold" : "bg-ink-750 text-white"
                         }`}
                       >
                         <span className="text-xs font-bold w-16">Série {sIdx + 1}</span>
@@ -1539,7 +1590,7 @@ export default function AlunoPage() {
 
                         <button
                           onClick={() => toggleSetComplete(activeWorkout.items[focusItemIndex].id, sIdx, activeWorkout.items[focusItemIndex].rest_seconds)}
-                          className={`btn-icon w-9 h-9 ${s.done ? "bg-black text-lime" : "bg-ink-700 hover:bg-lime hover:text-black text-ink-300"}`}
+                          className={`btn-icon w-9 h-9 ${s.done ? "bg-black text-brand" : "bg-ink-700 hover:bg-brand hover:text-black text-ink-300"}`}
                         >
                           <Check className="w-4 h-4 stroke-[3]" />
                         </button>
@@ -1562,14 +1613,14 @@ export default function AlunoPage() {
                   {focusItemIndex < activeWorkout.items.length - 1 ? (
                     <button
                       onClick={() => setFocusItemIndex(focusItemIndex + 1)}
-                      className="btn-lime flex-1 !py-3.5"
+                      className="btn-brand flex-1 !py-3.5"
                     >
                       Próximo <ChevronRight className="w-4 h-4" />
                     </button>
                   ) : (
                     <button
                       onClick={finishSession}
-                      className="btn-lime flex-1 !py-3.5 bg-lime font-bold shadow-glow"
+                      className="btn-brand flex-1 !py-3.5 bg-brand font-bold shadow-glow"
                     >
                       <CheckCheck className="w-5 h-5" /> Finalizar Treino
                     </button>
@@ -1593,9 +1644,9 @@ export default function AlunoPage() {
 
       {/* MODAL: RESUMO DE TREINO FINALIZADO */}
       {showFinishSummary && (
-        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-ink-850 border border-white/10 rounded-4xl max-w-md w-full p-6 space-y-6 shadow-card animate-fade-up text-center">
-            <div className="w-20 h-20 rounded-full bg-lime text-black flex items-center justify-center mx-auto shadow-glow">
+        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-ink-850 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-4xl max-w-md w-full p-6 space-y-6 shadow-card animate-fade-up text-center max-h-[92vh] overflow-y-auto pb-safe sm:pb-6">
+            <div className="w-20 h-20 rounded-full bg-brand text-black flex items-center justify-center mx-auto shadow-glow">
               <Trophy className="w-10 h-10" />
             </div>
 
@@ -1611,7 +1662,7 @@ export default function AlunoPage() {
               </div>
               <div className="p-3 bg-ink-750 rounded-2xl">
                 <div className="text-[10px] text-ink-300 font-semibold">VOLUME TOTAL</div>
-                <div className="text-lg font-bold text-lime mt-1">{totalVolumeKg || 1450} kg</div>
+                <div className="text-lg font-bold text-brand mt-1">{totalVolumeKg || 1450} kg</div>
               </div>
               <div className="p-3 bg-ink-750 rounded-2xl">
                 <div className="text-[10px] text-ink-300 font-semibold">SÉRIES</div>
@@ -1627,7 +1678,7 @@ export default function AlunoPage() {
                     key={score}
                     onClick={() => setRpeScore(score)}
                     className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                      rpeScore === score ? "bg-lime text-black shadow-glow" : "bg-ink-750 text-ink-300 hover:text-white"
+                      rpeScore === score ? "bg-brand text-black shadow-glow" : "bg-ink-750 text-ink-300 hover:text-white"
                     }`}
                   >
                     {score}
@@ -1642,7 +1693,7 @@ export default function AlunoPage() {
                 setInFocusMode(false);
                 toast.success("Treino salvo com sucesso no seu histórico!");
               }}
-              className="btn-lime w-full !py-4 font-bold text-base shadow-glow"
+              className="btn-brand w-full !py-4 font-bold text-base shadow-glow"
             >
               Concluir e Voltar
             </button>
@@ -1652,8 +1703,8 @@ export default function AlunoPage() {
 
       {/* MODAL: GUIA TÉCNICO & VÍDEO DO EXERCÍCIO */}
       {viewExercise && (
-        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-ink-850 border border-white/10 rounded-4xl max-w-md w-full p-6 space-y-4 shadow-card animate-fade-up">
+        <div className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-ink-850 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-4xl max-w-md w-full p-6 space-y-4 shadow-card animate-fade-up max-h-[92vh] overflow-y-auto pb-safe sm:pb-6">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <h3 className="text-lg font-bold text-white">{viewExercise.name}</h3>
               <button onClick={() => setViewExercise(null)} className="btn-icon w-8 h-8 bg-ink-700 text-white">
@@ -1678,7 +1729,7 @@ export default function AlunoPage() {
                 </div>
               ) : (
                 <div className="p-8 rounded-2xl bg-ink-750 text-center text-xs text-ink-300">
-                  <Video className="w-8 h-8 text-lime mx-auto mb-2" />
+                  <Video className="w-8 h-8 text-brand mx-auto mb-2" />
                   Demonstração em animação disponível em breve.
                 </div>
               )}
@@ -1697,8 +1748,8 @@ export default function AlunoPage() {
 
       {/* Cronômetro de descanso flutuante */}
       {timerVisible && (
-        <div className="fixed bottom-24 inset-x-0 z-50 px-4 animate-fade-up">
-          <div className="max-w-xl mx-auto rounded-4xl bg-lime text-black p-3 pr-4 flex items-center gap-3 shadow-lime">
+        <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] inset-x-0 lg:bottom-6 lg:left-auto lg:right-6 lg:w-[26rem] z-50 px-4 lg:px-0 animate-fade-up">
+          <div className="max-w-xl mx-auto rounded-4xl bg-brand text-black p-3 pr-4 flex items-center gap-3 shadow-brand">
             <Ring
               value={timerTotal ? (timerSeconds / timerTotal) * 100 : 0}
               size={56}
@@ -1714,7 +1765,7 @@ export default function AlunoPage() {
               </div>
               <div className="text-3xl font-bold font-mono tracking-tight leading-none mt-0.5">{fmtTime(timerSeconds)}</div>
             </div>
-            <button onClick={() => setTimerActive(!timerActive)} className="btn-icon bg-black text-lime">
+            <button onClick={() => setTimerActive(!timerActive)} className="btn-icon bg-black text-brand">
               {timerActive ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
             </button>
             <button onClick={() => setTimerSeconds(timerTotal)} className="btn-icon bg-black/10 hover:bg-black/20">
@@ -1730,7 +1781,7 @@ export default function AlunoPage() {
         </div>
       )}
 
-      {/* Modal de Registro de Nova Medição pelo Aluno */}
+      {/* Modal de Registro de Nova Medição pela Aluna */}
       {showMyMeasurementModal && (
         <Modal
           title="Registrar Medidas & Peso"
@@ -1742,7 +1793,7 @@ export default function AlunoPage() {
                 Cancelar
               </button>
               <button
-                className="btn-lime"
+                className="btn-brand"
                 disabled={savingMyMeasure}
                 onClick={handleSaveMyMeasurement}
               >
@@ -1850,33 +1901,8 @@ export default function AlunoPage() {
         </Modal>
       )}
 
-      {/* Bottom Nav Flutuante Completo */}
-      <nav className="fixed bottom-4 inset-x-0 z-40 px-3">
-        <div className="max-w-md mx-auto flex items-center justify-around p-1.5 rounded-full bg-ink-850/90 backdrop-blur-xl border border-white/[0.08] shadow-card">
-          {[
-            { id: "workout" as const, label: "Treino", icon: <Dumbbell className="w-4 h-4" /> },
-            { id: "agenda" as const, label: "Aulas", icon: <Calendar className="w-4 h-4" /> },
-            { id: "progress" as const, label: "Progresso", icon: <TrendingUp className="w-4 h-4" /> },
-            { id: "finance" as const, label: "Faturas", icon: <CreditCard className="w-4 h-4" /> },
-            { id: "checkin" as const, label: "Entrada", icon: <QrCode className="w-4 h-4" /> },
-            { id: "profile" as const, label: "Perfil", icon: <User className="w-4 h-4" /> },
-          ].map((t) => {
-            const on = activeTab === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id)}
-                className={`flex flex-col items-center gap-1 py-1.5 px-2.5 rounded-full transition-all ${
-                  on ? "bg-lime text-black font-bold shadow-glow" : "text-ink-300 hover:text-white"
-                }`}
-              >
-                {t.icon}
-                <span className="text-[10px]">{t.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      {/* Dock do celular */}
+      <Dock items={tabs} value={activeTab} onChange={setActiveTab} />
     </div>
   );
 }

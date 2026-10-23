@@ -4,7 +4,8 @@ import React, { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api, getToken, homeFor } from "@/services/api";
 import { useSession } from "@/lib/session";
-import { Empty, PillTabs } from "@/components/ui";
+import { CalendarDays, Dumbbell } from "lucide-react";
+import { Dock, Empty, PillTabs } from "@/components/ui";
 import Classes from "./_classes";
 import Prescription from "./_prescription";
 
@@ -23,8 +24,8 @@ function ProfessorShell() {
   }, [ready, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const tabs = ([
-    { id: "aulas" as Tab, label: "Minhas aulas", ok: can("agenda.view", "agenda.manage") },
-    { id: "treinos" as Tab, label: "Treinos", ok: can("workouts.manage") },
+    { id: "aulas" as Tab, label: "Minhas aulas", icon: <CalendarDays className="w-[18px] h-[18px]" />, ok: can("agenda.view", "agenda.manage") },
+    { id: "treinos" as Tab, label: "Treinos", icon: <Dumbbell className="w-[18px] h-[18px]" />, ok: can("workouts.manage") },
   ]).filter((t) => t.ok);
 
   if (!ready || !user || user.role === "ALUNO") return <div className="flex-1 flex items-center justify-center text-ink-300 text-sm">Carregando…</div>;
@@ -32,12 +33,13 @@ function ProfessorShell() {
 
   const wanted = params.get("tab") as Tab | null;
   const current = tabs.find((t) => t.id === wanted)?.id || tabs[0].id;
-  const go = (t: Tab) => router.replace(`/professor?tab=${t}`, { scroll: false });
+  const go = (t: Tab) => { router.replace(`/professor?tab=${t}`, { scroll: false }); window.scrollTo({ top: 0 }); };
 
   return (
-    <div className="flex-1 w-full">
-      {tabs.length > 1 && <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6"><PillTabs tabs={tabs.map(({ id, label }) => ({ id, label }))} value={current} onChange={go} /></div>}
+    <div className={`flex-1 w-full ${tabs.length > 1 ? "pb-dock lg:pb-0" : ""}`}>
+      {tabs.length > 1 && <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6"><PillTabs tabs={tabs.map(({ id, label }) => ({ id, label }))} value={current} onChange={go} /></div>}
       {current === "aulas" ? <Classes /> : <Prescription />}
+      {tabs.length > 1 && <Dock items={tabs.map(({ id, label, icon }) => ({ id, label, icon }))} value={current} onChange={go} />}
     </div>
   );
 }

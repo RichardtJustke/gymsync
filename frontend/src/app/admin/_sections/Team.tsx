@@ -60,14 +60,14 @@ function People() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm text-ink-200"><input type="checkbox" checked={inactive} onChange={(e) => setInactive(e.target.checked)} />Mostrar desativados</label>
-        <button className="btn-lime" onClick={() => setEdit("new")}><Plus className="w-4 h-4" />Nova pessoa</button>
+        <button className="btn-brand" onClick={() => setEdit("new")}><Plus className="w-4 h-4" />Nova pessoa</button>
       </div>
       {error ? <ErrorBox message={error} onRetry={reload} /> : loading && !data ? <Loading /> : (
         <div className="grid gap-3 md:grid-cols-2">
           {data?.map((m) => (
             <div key={m.id} className={`card p-4 space-y-3 ${m.active ? "" : "opacity-60"}`}>
               <div className="flex items-center gap-3">
-                <Avatar name={m.name} size={46} tone={m.role === "ADMIN" ? "lime" : "dark"} />
+                <Avatar name={m.name} size={46} tone={m.role === "ADMIN" ? "brand" : "dark"} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{m.name}{m.id === me && <span className="text-ink-400 font-normal"> (você)</span>}</div>
                   <div className="text-xs text-ink-300 truncate">{m.job_title || ROLE_LABEL[m.role]} · {m.email}</div>
@@ -83,7 +83,7 @@ function People() {
                 <button className="btn-dark px-3 py-2 text-xs" onClick={() => setEdit(m)}>Editar</button>
                 {m.active && <button className="btn-dark px-3 py-2 text-xs" disabled={busy} onClick={() => reset(m)}>Nova senha</button>}
                 {m.active && m.id !== me && <button className="btn-ghost px-3 py-2 text-xs" onClick={() => setOff(m)}>Desativar</button>}
-                {!m.active && <button className="btn-lime px-3 py-2 text-xs" disabled={busy} onClick={() => toggle(m, true)}>Reativar</button>}
+                {!m.active && <button className="btn-brand px-3 py-2 text-xs" disabled={busy} onClick={() => toggle(m, true)}>Reativar</button>}
               </div>
             </div>
           ))}
@@ -93,7 +93,7 @@ function People() {
       {off && <ConfirmDialog title="Desativar acesso" danger confirmLabel="Desativar" busy={busy}
         message={<>{off.name} perde o acesso agora (as sessões abertas são encerradas). O histórico e o fechamento do mês continuam. {off.role === "PROFESSOR" && "As aulas futuras dela(e) ficam sem professor(a)."}</>}
         onClose={() => setOff(null)} onConfirm={() => toggle(off, false)} />}
-      {creds && <Modal title={`Acesso de ${creds.name}`} onClose={() => setCreds(null)} width="max-w-md" footer={<button className="btn-lime" onClick={() => setCreds(null)}>Concluir</button>}>
+      {creds && <Modal title={`Acesso de ${creds.name}`} onClose={() => setCreds(null)} width="max-w-md" footer={<button className="btn-brand" onClick={() => setCreds(null)}>Concluir</button>}>
         <p className="text-sm text-ink-200">Passe estes dados à pessoa. Na primeira entrada ela cria uma senha nova.</p><Credentials login={creds.login} password={creds.pass} /></Modal>}
     </div>
   );
@@ -131,7 +131,7 @@ function StaffModal({ member, onClose, onDone, onCreds }: { member: StaffMember 
 
   return (
     <Modal title={member ? `Editar ${member.name}` : "Nova pessoa da equipe"} onClose={onClose} width="max-w-2xl"
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || f.name.trim().length < 2 || !f.email} onClick={save}>{busy ? "Salvando…" : "Salvar"}</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || f.name.trim().length < 2 || !f.email} onClick={save}>{busy ? "Salvando…" : "Salvar"}</button></>}>
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Nome completo"><input className="field" value={f.name} onChange={(e) => set("name", e.target.value)} autoFocus={!member} /></Field>
         <Field label="E-mail (é o login)"><input className="field" type="email" value={f.email} onChange={(e) => set("email", e.target.value)} /></Field>
@@ -184,7 +184,7 @@ function Permissions() {
 
   return (
     <div className="space-y-4">
-      <div className="card-soft p-4 flex gap-3 text-sm text-ink-200"><ShieldCheck className="w-5 h-5 text-lime shrink-0 mt-0.5" /><p>Cada cargo vê só o que estiver marcado. O(a) dono(a) sempre tem acesso a tudo. As mudanças valem na hora, sem a pessoa precisar sair do sistema.</p></div>
+      <div className="card-soft p-4 flex gap-3 text-sm text-ink-200"><ShieldCheck className="w-5 h-5 text-brand shrink-0 mt-0.5" /><p>Cada cargo vê só o que estiver marcado. O(a) dono(a) sempre tem acesso a tudo. As mudanças valem na hora, sem a pessoa precisar sair do sistema.</p></div>
       <div className="grid gap-4 lg:grid-cols-2">
         {data.roles.map((role) => (
           <section key={role.role} className="card p-5 space-y-4">
@@ -213,7 +213,7 @@ function Permissions() {
             {role.editable && (
               <div className="flex justify-end gap-2">
                 {role.custom && <button className="btn-ghost" disabled={busy} onClick={() => reset(role.role)}>Voltar ao padrão</button>}
-                <button className="btn-lime" disabled={busy || !dirty(role.role)} onClick={() => save(role.role)}>Salvar</button>
+                <button className="btn-brand" disabled={busy || !dirty(role.role)} onClick={() => save(role.role)}>Salvar</button>
               </div>
             )}
           </section>
@@ -274,7 +274,7 @@ function Payroll() {
       {data && (
         <div className="grid gap-4 sm:grid-cols-3">
           <StatCard icon={<ShieldCheck className="w-4 h-4" />} label="Total do mês" value={brl(data.total)} />
-          <StatCard variant="lime" icon={<ShieldCheck className="w-4 h-4" />} label="Já pago" value={brl(data.paid)} />
+          <StatCard variant="brand" icon={<ShieldCheck className="w-4 h-4" />} label="Já pago" value={brl(data.paid)} />
           <StatCard icon={<ShieldCheck className="w-4 h-4" />} label="Falta pagar" value={brl(data.total - data.paid)} />
         </div>
       )}
@@ -291,7 +291,7 @@ function Payroll() {
                   <td className="p-3 text-right">{brl(r.commission)}</td><td className="p-3 text-right">{brl(r.bonus)}</td><td className="p-3 text-right">{brl(r.deductions)}</td>
                   <td className="p-3 text-right font-semibold text-white">{brl(r.total)}</td>
                   <td className="p-3 text-right whitespace-nowrap">
-                    {r.status === "PAGO" ? <><Tag tone="ok">Pago {dateBR(r.paid_at)}</Tag> <button className="btn-ghost px-2 py-1 text-xs" disabled={busy} onClick={() => reopen(r)}>Reabrir</button></> : <button className="btn-lime px-3 py-2 text-xs" onClick={() => setRow(r)}>Fechar / pagar</button>}
+                    {r.status === "PAGO" ? <><Tag tone="ok">Pago {dateBR(r.paid_at)}</Tag> <button className="btn-ghost px-2 py-1 text-xs" disabled={busy} onClick={() => reopen(r)}>Reabrir</button></> : <button className="btn-brand px-3 py-2 text-xs" onClick={() => setRow(r)}>Fechar / pagar</button>}
                   </td>
                 </tr>
               ))}
@@ -314,7 +314,7 @@ function PayrollModal({ row, month, onClose, onDone }: { row: PayrollRow; month:
   const save = async (pay: boolean) => { const r = await run(() => api.savePayroll(row.user_id, { month, bonus, deductions, notes, mark_paid: pay }), pay ? "Marcado como pago" : "Ajustes salvos"); if (r) { onDone(); onClose(); } };
   return (
     <Modal title={`${row.name} — ${monthLabel(month)}`} onClose={onClose} width="max-w-md"
-      footer={<><button className="btn-ghost" disabled={busy} onClick={() => save(false)}>Só salvar ajustes</button><button className="btn-lime" disabled={busy} onClick={() => save(true)}>Pagar {brl(total)}</button></>}>
+      footer={<><button className="btn-ghost" disabled={busy} onClick={() => save(false)}>Só salvar ajustes</button><button className="btn-brand" disabled={busy} onClick={() => save(true)}>Pagar {brl(total)}</button></>}>
       <ul className="text-sm space-y-1.5">
         <li className="flex justify-between"><span className="text-ink-300">Fixo</span><span className="text-white">{brl(row.base_salary)}</span></li>
         <li className="flex justify-between"><span className="text-ink-300">Horas/aula ({num(row.hours, 1)}h × {brl(row.hourly_rate)})</span><span className="text-white">{brl(row.hours_amount)}</span></li>

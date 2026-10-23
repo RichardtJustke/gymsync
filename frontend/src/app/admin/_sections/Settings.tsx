@@ -9,6 +9,7 @@ import { useToast } from "@/context/ToastContext";
 import { brl, dateBR, dateTimeBR } from "@/lib/format";
 import { ErrorBox, Loading, NumberInput, PageHead } from "./shared";
 import type { Equipment, Modality, Permission, Plan } from "@/types";
+import { BRAND } from "@/lib/brand";
 
 type Tab = "planos" | "modalidades" | "academia" | "avisos" | "equipamentos";
 
@@ -43,13 +44,13 @@ function Plans() {
   if (loading && !data) return <Loading />;
   return (
     <div className="space-y-4">
-      <div className="flex justify-end"><button className="btn-lime" onClick={() => setEdit({ duration_months: 1, classes_per_week: 0, price: 0, active: true })}><Plus className="w-4 h-4" />Novo plano</button></div>
+      <div className="flex justify-end"><button className="btn-brand" onClick={() => setEdit({ duration_months: 1, classes_per_week: 0, price: 0, active: true })}><Plus className="w-4 h-4" />Novo plano</button></div>
       <div className="grid gap-3 md:grid-cols-2">
         {data?.map(({ plan: p, students }) => (
           <div key={p.id} className={`card p-4 space-y-2 ${p.active ? "" : "opacity-60"}`}>
             <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-semibold text-white">{p.name}</h3><Tag tone={p.active ? "ok" : "mute"}>{p.active ? "Ativo" : "Inativo"}</Tag></div>
             <div className="text-2xl font-semibold text-white">{brl(p.price)}<span className="text-xs text-ink-300 font-normal">/mês</span></div>
-            <div className="text-xs text-ink-300">{p.classes_per_week ? `${p.classes_per_week} aula(s) por semana` : "Aulas ilimitadas"} · contrato de {p.duration_months} mês(es) · {students} aluno(s)</div>
+            <div className="text-xs text-ink-300">{p.classes_per_week ? `${p.classes_per_week} aula(s) por semana` : "Aulas ilimitadas"} · contrato de {p.duration_months} mês(es) · {students} aluna(s)</div>
             {p.description && <div className="text-xs text-ink-400">{p.description}</div>}
             <div className="flex gap-2 pt-1"><button className="btn-dark px-3 py-2 text-xs" onClick={() => setEdit(p)}>Editar</button>
               <button className="btn-ghost px-3 py-2 text-xs" disabled={busy} onClick={async () => { const r = await run(() => api.updatePlan(p.id, { ...p, active: !p.active }), p.active ? "Plano desativado" : "Plano reativado"); if (r) reload(); }}>{p.active ? "Desativar" : "Reativar"}</button></div>
@@ -65,7 +66,7 @@ function PlanModal({ initial, onClose, onDone }: { initial: Partial<Plan>; onClo
   const [f, setF] = useState({ name: initial.name || "", description: initial.description || "", price: initial.price || 0, duration_months: initial.duration_months || 1, classes_per_week: initial.classes_per_week || 0, active: initial.active ?? true });
   return (
     <Modal title={initial.id ? "Editar plano" : "Novo plano"} onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || !f.name.trim()} onClick={async () => { const r = await run(() => (initial.id ? api.updatePlan(initial.id, f) : api.createPlan(f)), "Plano salvo"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || !f.name.trim()} onClick={async () => { const r = await run(() => (initial.id ? api.updatePlan(initial.id, f) : api.createPlan(f)), "Plano salvo"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
       <Field label="Nome"><input className="field" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus /></Field>
       <div className="grid grid-cols-3 gap-3">
         <Field label="Mensalidade (R$)"><NumberInput value={f.price} min={0} step={0.01} onChange={(n) => setF({ ...f, price: n })} /></Field>
@@ -87,7 +88,7 @@ function Modalities() {
   if (loading && !data) return <Loading />;
   return (
     <div className="space-y-4">
-      <div className="flex justify-end"><button className="btn-lime" onClick={() => setEdit({ color: "#D7FF3A", allow_trial: true, active: true })}><Plus className="w-4 h-4" />Nova modalidade</button></div>
+      <div className="flex justify-end"><button className="btn-brand" onClick={() => setEdit({ color: BRAND, allow_trial: true, active: true })}><Plus className="w-4 h-4" />Nova modalidade</button></div>
       <div className="grid gap-3 md:grid-cols-2">
         {data?.map((m) => (
           <div key={m.id} className={`card p-4 flex items-center gap-3 ${m.active ? "" : "opacity-60"}`}>
@@ -104,10 +105,10 @@ function Modalities() {
 }
 function ModalityModal({ initial, onClose, onDone }: { initial: Partial<Modality>; onClose: () => void; onDone: () => void }) {
   const { busy, run } = useAction();
-  const [f, setF] = useState({ name: initial.name || "", description: initial.description || "", color: initial.color || "#D7FF3A", allow_trial: initial.allow_trial ?? true, active: initial.active ?? true });
+  const [f, setF] = useState({ name: initial.name || "", description: initial.description || "", color: initial.color || BRAND, allow_trial: initial.allow_trial ?? true, active: initial.active ?? true });
   return (
     <Modal title={initial.id ? "Editar modalidade" : "Nova modalidade"} onClose={onClose} width="max-w-md"
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || !f.name.trim()} onClick={async () => { const r = await run(() => (initial.id ? api.updateModality(initial.id, f) : api.createModality(f)), "Modalidade salva"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || !f.name.trim()} onClick={async () => { const r = await run(() => (initial.id ? api.updateModality(initial.id, f) : api.createModality(f)), "Modalidade salva"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
       <Field label="Nome"><input className="field" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus /></Field>
       <Field label="Descrição"><input className="field" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
       <div className="flex items-end gap-4"><Field label="Cor na agenda"><input type="color" className="h-11 w-20 rounded-xl bg-ink-750 border-0 p-1" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} /></Field>
@@ -138,7 +139,7 @@ function GymRules() {
         <Field label="Cancelar reserva até quantas horas antes" hint="0 a 72 horas"><NumberInput value={f.cancel_deadline_hours} min={0} max={72} onChange={(n) => setF({ ...f, cancel_deadline_hours: n })} /></Field>
         <Field label="Bloquear entrada após quantos dias de atraso" hint="0 = nunca bloqueia sozinho. Ao pagar, o acesso volta na hora."><NumberInput value={f.overdue_block_days} min={0} max={90} onChange={(n) => setF({ ...f, overdue_block_days: n })} /></Field>
       </section>
-      <div className="lg:col-span-2 flex justify-end"><button className="btn-lime" disabled={busy} onClick={async () => { const r = await run(() => api.updateGym(f), "Configurações salvas"); if (r) reload(); }}>Salvar</button></div>
+      <div className="lg:col-span-2 flex justify-end"><button className="btn-brand" disabled={busy} onClick={async () => { const r = await run(() => api.updateGym(f), "Configurações salvas"); if (r) reload(); }}>Salvar</button></div>
     </div>
   );
 }
@@ -152,7 +153,7 @@ function Announcements() {
   const [f, setF] = useState({ kind: "AVISO", title: "", body: "", modality_id: "" });
   const send = async () => {
     const r = await run(() => api.createAnnouncement({ ...f, modality_id: f.modality_id || undefined }));
-    if (r) { setF({ kind: "AVISO", title: "", body: "", modality_id: "" }); list.reload(); toast.success(`Enviado para ${r.sent_count} aluno(s).`); }
+    if (r) { setF({ kind: "AVISO", title: "", body: "", modality_id: "" }); list.reload(); toast.success(`Enviado para ${r.sent_count} aluna(s).`); }
   };
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -161,13 +162,13 @@ function Announcements() {
         <PillTabs value={f.kind} onChange={(kind) => setF({ ...f, kind })} tabs={[{ id: "AVISO", label: "Aviso" }, { id: "EVENTO", label: "Evento" }]} />
         <Field label="Título"><input className="field" maxLength={120} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
         <Field label="Mensagem"><textarea className="field" rows={4} maxLength={1000} value={f.body} onChange={(e) => setF({ ...f, body: e.target.value })} /></Field>
-        <Field label="Quem recebe"><select className="field" value={f.modality_id} onChange={(e) => setF({ ...f, modality_id: e.target.value })}><option value="">Todos os alunos ativos</option>{mods.data?.map((m) => <option key={m.id} value={m.id}>Quem fez {m.name} (60 dias)</option>)}</select></Field>
-        <button className="btn-lime w-full" disabled={busy || !f.title.trim() || !f.body.trim()} onClick={send}><Send className="w-4 h-4" />Enviar agora</button>
+        <Field label="Quem recebe"><select className="field" value={f.modality_id} onChange={(e) => setF({ ...f, modality_id: e.target.value })}><option value="">Todas as alunas ativas</option>{mods.data?.map((m) => <option key={m.id} value={m.id}>Quem fez {m.name} (60 dias)</option>)}</select></Field>
+        <button className="btn-brand w-full" disabled={busy || !f.title.trim() || !f.body.trim()} onClick={send}><Send className="w-4 h-4" />Enviar agora</button>
       </section>
       <section className="card p-5">
         <h3 className="section-title mb-3">Enviados</h3>
         {!list.data || list.data.length === 0 ? <Empty title="Nenhum aviso enviado" /> : (
-          <ul className="space-y-2">{list.data.map((a) => <li key={a.id} className="card-soft p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-white">{a.title}</span><Tag tone="mute">{a.kind === "EVENTO" ? "Evento" : "Aviso"}</Tag></div><div className="text-xs text-ink-300 mt-1 line-clamp-2">{a.body}</div><div className="text-[11px] text-ink-400 mt-1">{dateTimeBR(a.created_at)} · {a.sent_count} aluno(s)</div></li>)}</ul>
+          <ul className="space-y-2">{list.data.map((a) => <li key={a.id} className="card-soft p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-white">{a.title}</span><Tag tone="mute">{a.kind === "EVENTO" ? "Evento" : "Aviso"}</Tag></div><div className="text-xs text-ink-300 mt-1 line-clamp-2">{a.body}</div><div className="text-[11px] text-ink-400 mt-1">{dateTimeBR(a.created_at)} · {a.sent_count} aluna(s)</div></li>)}</ul>
         )}
       </section>
     </div>
@@ -185,7 +186,7 @@ function EquipmentList() {
   if (loading && !data) return <Loading />;
   return (
     <div className="space-y-4">
-      <div className="flex justify-end"><button className="btn-lime" onClick={() => setEdit({ status: "OPERACIONAL" })}><Plus className="w-4 h-4" />Novo equipamento</button></div>
+      <div className="flex justify-end"><button className="btn-brand" onClick={() => setEdit({ status: "OPERACIONAL" })}><Plus className="w-4 h-4" />Novo equipamento</button></div>
       {data && data.length === 0 ? <div className="card"><Empty title="Nenhum equipamento cadastrado" /></div> : (
         <div className="card divide-y divide-white/5">
           {data?.map((e) => { const st = EQ_STATUS[e.status]; const late = e.next_maintenance && new Date(e.next_maintenance) < new Date(); return (
@@ -206,7 +207,7 @@ function EquipmentModal({ initial, onClose, onDone }: { initial: Partial<Equipme
   const [f, setF] = useState({ name: initial.name || "", sector: initial.sector || "", status: initial.status || "OPERACIONAL", notes: initial.notes || "", last_maintenance: initial.last_maintenance?.slice(0, 10) || "", next_maintenance: initial.next_maintenance?.slice(0, 10) || "" });
   return (
     <Modal title={initial.id ? "Editar equipamento" : "Novo equipamento"} onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || !f.name.trim()} onClick={async () => { const r = await run(() => (initial.id ? api.updateEquipment(initial.id, f) : api.createEquipment(f)), "Equipamento salvo"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || !f.name.trim()} onClick={async () => { const r = await run(() => (initial.id ? api.updateEquipment(initial.id, f) : api.createEquipment(f)), "Equipamento salvo"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Nome"><input className="field" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus /></Field>
         <Field label="Setor"><input className="field" value={f.sector} onChange={(e) => setF({ ...f, sector: e.target.value })} /></Field>

@@ -31,12 +31,12 @@ export default function Students({ can }: { can: (...p: Permission[]) => boolean
   return (
     <div className="space-y-5">
       <PageHead
-        title="Alunos"
-        subtitle={data ? `${data.total} aluno(s) encontrado(s)` : undefined}
+        title="Alunas"
+        subtitle={data ? `${data.total} aluna(s) encontrada(s)` : undefined}
         actions={can("students.manage") && (
           <>
             <button className="btn-dark" onClick={() => setShowImport(true)}><UploadCloud className="w-4 h-4" />Importar planilha</button>
-            <button className="btn-lime" onClick={() => setShowNew(true)}><Plus className="w-4 h-4" />Novo aluno</button>
+            <button className="btn-brand" onClick={() => setShowNew(true)}><Plus className="w-4 h-4" />Nova aluna</button>
           </>
         )}
       />
@@ -52,7 +52,7 @@ export default function Students({ can }: { can: (...p: Permission[]) => boolean
       {error ? <ErrorBox message={error} onRetry={reload} /> : loading && !data ? <Loading /> : (
         <div className="card overflow-hidden">
           {data && data.data.length === 0 ? (
-            <Empty title="Nenhum aluno encontrado">Ajuste a busca ou o filtro.</Empty>
+            <Empty title="Nenhuma aluna encontrada">Ajuste a busca ou o filtro.</Empty>
           ) : (
             <ul className="divide-y divide-white/5">
               {data?.data.map((s) => {
@@ -92,7 +92,7 @@ export default function Students({ can }: { can: (...p: Permission[]) => boolean
   );
 }
 
-/* ----------------------------- Novo aluno ----------------------------- */
+/* ----------------------------- Nova aluna ----------------------------- */
 function NewStudentModal({ can, onClose, onDone }: { can: (...p: Permission[]) => boolean; onClose: () => void; onDone: () => void }) {
   const { busy, run } = useAction();
   const plans = useAsync(() => api.listPlans(), []);
@@ -111,8 +111,8 @@ function NewStudentModal({ can, onClose, onDone }: { can: (...p: Permission[]) =
 
   if (creds) {
     return (
-      <Modal title="Aluno cadastrado" onClose={onClose} width="max-w-md" footer={<button className="btn-lime" onClick={onClose}>Concluir</button>}>
-        <p className="text-sm text-ink-200">Passe estes dados para o aluno entrar no app. No primeiro acesso ele define uma senha nova.</p>
+      <Modal title="Aluna cadastrada" onClose={onClose} width="max-w-md" footer={<button className="btn-brand" onClick={onClose}>Concluir</button>}>
+        <p className="text-sm text-ink-200">Passe estes dados para a aluna entrar no app. No primeiro acesso ela define uma senha nova.</p>
         <Credentials login={creds.login} password={creds.pass} />
       </Modal>
     );
@@ -122,7 +122,7 @@ function NewStudentModal({ can, onClose, onDone }: { can: (...p: Permission[]) =
     <Modal
       title="Novo aluno"
       onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || f.name.trim().length < 2} onClick={submit}>{busy ? "Salvando…" : "Matricular"}</button></>}
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || f.name.trim().length < 2} onClick={submit}>{busy ? "Salvando…" : "Matricular"}</button></>}
     >
       <Field label="Nome completo"><input className="field" value={f.name} onChange={(e) => set("name", e.target.value)} autoFocus /></Field>
       <div className="grid sm:grid-cols-2 gap-3">
@@ -145,7 +145,7 @@ function NewStudentModal({ can, onClose, onDone }: { can: (...p: Permission[]) =
           </select>
         </Field>
       )}
-      <p className="text-xs text-ink-400">É preciso e-mail ou CPF para o aluno entrar no app.</p>
+      <p className="text-xs text-ink-400">É preciso e-mail ou CPF para a aluna entrar no app.</p>
     </Modal>
   );
 }
@@ -173,7 +173,7 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
 
   if (result) {
     return (
-      <Modal title="Importação concluída" onClose={onClose} footer={<button className="btn-lime" onClick={onClose}>Fechar</button>}>
+      <Modal title="Importação concluída" onClose={onClose} footer={<button className="btn-brand" onClick={onClose}>Fechar</button>}>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="card-soft p-3"><div className="text-xl font-semibold text-white">{result.created_count}</div><div className="text-xs text-ink-300">criados</div></div>
           <div className="card-soft p-3"><div className="text-xl font-semibold text-white">{result.updated_count}</div><div className="text-xs text-ink-300">atualizados</div></div>
@@ -181,7 +181,7 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
         </div>
         {result.credentials && result.credentials.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm text-ink-200">As senhas provisórias aparecem só agora. Baixe a lista para entregar aos alunos.</p>
+            <p className="text-sm text-ink-200">As senhas provisórias aparecem só agora. Baixe a lista para entregar às alunas.</p>
             <button className="btn-dark w-full" onClick={() => downloadCSV("acessos-importados.csv", ["Nome", "Login", "Senha provisória"], result.credentials!.map((c) => [c.name, c.login, c.temp_password]))}>
               <Download className="w-4 h-4" />Baixar acessos (CSV)
             </button>
@@ -194,14 +194,14 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
 
   return (
     <Modal
-      title="Importar alunos de planilha"
+      title="Importar alunas de planilha"
       onClose={onClose}
       width="max-w-3xl"
-      footer={preview && <><button className="btn-ghost" onClick={() => setPreview(null)}>Trocar arquivo</button><button className="btn-lime" disabled={busy || preview.valid_rows === 0} onClick={confirm}>{busy ? "Importando…" : `Importar ${preview.valid_rows} aluno(s)`}</button></>}
+      footer={preview && <><button className="btn-ghost" onClick={() => setPreview(null)}>Trocar arquivo</button><button className="btn-brand" disabled={busy || preview.valid_rows === 0} onClick={confirm}>{busy ? "Importando…" : `Importar ${preview.valid_rows} aluna(s)`}</button></>}
     >
       {!preview ? (
         <button onClick={() => ref.current?.click()} className="w-full card-soft p-10 text-center hover:bg-ink-700 transition-colors">
-          <FileSpreadsheet className="w-10 h-10 mx-auto text-lime mb-3" />
+          <FileSpreadsheet className="w-10 h-10 mx-auto text-brand mb-3" />
           <div className="text-white font-medium">Escolha a planilha (.xlsx ou .csv)</div>
           <div className="text-xs text-ink-300 mt-1">Pode ser a exportação do EVO. As colunas são reconhecidas automaticamente.</div>
           <input ref={ref} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
@@ -233,7 +233,7 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
   );
 }
 
-/* ----------------------------- Ficha do aluno ----------------------------- */
+/* ----------------------------- Ficha da aluna ----------------------------- */
 function StudentDrawer({ id, can, onClose, onChanged }: { id: string; can: (...p: Permission[]) => boolean; onClose: () => void; onChanged: () => void }) {
   const { data, loading, error, reload } = useAsync(() => api.getStudent(id), [id]);
   const { busy, run } = useAction();
@@ -245,8 +245,8 @@ function StudentDrawer({ id, can, onClose, onChanged }: { id: string; can: (...p
   const plans = useAsync(() => (can("students.manage") ? api.listPlans() : Promise.resolve([])), []);
 
   const refresh = () => { reload(); onChanged(); };
-  if (loading && !data) return <Drawer title="Aluno" onClose={onClose}><Loading /></Drawer>;
-  if (error || !data) return <Drawer title="Aluno" onClose={onClose}><ErrorBox message={error || "Sem dados"} onRetry={reload} /></Drawer>;
+  if (loading && !data) return <Drawer title="Aluna" onClose={onClose}><Loading /></Drawer>;
+  if (error || !data) return <Drawer title="Aluna" onClose={onClose}><ErrorBox message={error || "Sem dados"} onRetry={reload} /></Drawer>;
 
   const { student: s } = data;
   const st = STUDENT_STATUS[s.status];
@@ -288,7 +288,7 @@ function StudentDrawer({ id, can, onClose, onChanged }: { id: string; can: (...p
       {s.status === "ATIVO" && data.checkins_last30 === 0 && (
         <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3 text-xs">
           <div className="text-amber-300">
-            ⚠️ <strong>Risco de Evasão:</strong> Aluno sem check-in nos últimos 30 dias.
+            ⚠️ <strong>Risco de Evasão:</strong> Aluna sem check-in nos últimos 30 dias.
           </div>
           {wa && (
             <a
@@ -307,7 +307,7 @@ function StudentDrawer({ id, can, onClose, onChanged }: { id: string; can: (...p
         {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn-dark">WhatsApp</a>}
         {can("students.manage") && !edit && <button className="btn-dark" onClick={startEdit}>Editar</button>}
         {can("students.manage") && <button className="btn-dark" disabled={busy} onClick={reset}>Nova senha</button>}
-        {can("students.manage") && s.status === "CANCELADO" && <button className="btn-lime" disabled={busy} onClick={() => setStatus("ATIVO")}>Reativar matrícula</button>}
+        {can("students.manage") && s.status === "CANCELADO" && <button className="btn-brand" disabled={busy} onClick={() => setStatus("ATIVO")}>Reativar matrícula</button>}
         {can("students.manage") && s.status !== "CANCELADO" && <button className="btn bg-[#FF5A36]/15 text-[#FF7A5C] px-5 py-3" onClick={() => setCancel(true)}>Cancelar matrícula</button>}
         {can("students.manage") && s.status === "INADIMPLENTE" && <button className="btn-dark" disabled={busy} onClick={() => setStatus("ATIVO")}>Liberar acesso</button>}
       </div>
@@ -329,7 +329,7 @@ function StudentDrawer({ id, can, onClose, onChanged }: { id: string; can: (...p
             <Field label="Dia do vencimento"><NumberInput value={form.due_day} min={1} max={31} onChange={(n) => setForm({ ...form, due_day: n })} /></Field>
           </div>
           <Field label="Observações"><textarea className="field" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field>
-          <div className="flex justify-end gap-2"><button className="btn-ghost" onClick={() => setEdit(false)}>Cancelar</button><button className="btn-lime" disabled={busy} onClick={save}>Salvar</button></div>
+          <div className="flex justify-end gap-2"><button className="btn-ghost" onClick={() => setEdit(false)}>Cancelar</button><button className="btn-brand" disabled={busy} onClick={save}>Salvar</button></div>
         </div>
       )}
 
@@ -351,7 +351,7 @@ function StudentDrawer({ id, can, onClose, onChanged }: { id: string; can: (...p
                   <div className="text-white font-medium">{brl(inv.amount - inv.discount)}</div>
                   <Tag tone={t.tone}>{t.label}</Tag>
                   {can("finance.manage") && (inv.status === "PENDENTE" || inv.status === "VENCIDO") && (
-                    <button className="btn-lime px-3 py-2 text-xs" onClick={() => setPay({ ...inv, student: s })}>Receber</button>
+                    <button className="btn-brand px-3 py-2 text-xs" onClick={() => setPay({ ...inv, student: s })}>Receber</button>
                   )}
                 </li>
               );

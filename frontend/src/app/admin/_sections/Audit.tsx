@@ -9,7 +9,7 @@ import { dateTimeBR, ROLE_LABEL } from "@/lib/format";
 import { ErrorBox, Loading, PageHead } from "./shared";
 
 const ENTITIES: { id: string; label: string }[] = [
-  { id: "", label: "Tudo" }, { id: "student", label: "Alunos" }, { id: "invoice", label: "Cobranças" }, { id: "sale", label: "Vendas" },
+  { id: "", label: "Tudo" }, { id: "student", label: "Alunas" }, { id: "invoice", label: "Cobranças" }, { id: "sale", label: "Vendas" },
   { id: "staff", label: "Equipe" }, { id: "permissions", label: "Permissões" }, { id: "payroll", label: "Folha" }, { id: "session", label: "Aulas" },
   { id: "lead", label: "Leads" }, { id: "plan", label: "Planos" },
 ];
@@ -27,7 +27,7 @@ export default function Audit() {
     <div className="space-y-5">
       <PageHead title="Histórico de ações" subtitle="Quem fez o quê no sistema: descontos, cancelamentos, trocas e permissões" />
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]"><Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" /><input className="field pl-11" placeholder="Buscar no texto (ex.: nome do aluno)" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} /></div>
+        <div className="relative flex-1 min-w-[200px]"><Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" /><input className="field pl-11" placeholder="Buscar no texto (ex.: nome da aluna)" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} /></div>
         <select className="field w-auto" value={entity} onChange={(e) => { setEntity(e.target.value); setPage(1); }} aria-label="Tipo">{ENTITIES.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}</select>
         <input type="date" className="field w-auto" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1); }} aria-label="De" />
         <input type="date" className="field w-auto" value={to} onChange={(e) => { setTo(e.target.value); setPage(1); }} aria-label="Até" />

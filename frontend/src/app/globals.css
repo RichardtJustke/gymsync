@@ -8,10 +8,12 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-ink-950 text-ink-100 antialiased selection:bg-lime selection:text-black;
+    @apply bg-ink-950 text-ink-100 antialiased selection:bg-brand selection:text-black;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* Colunas de grid não podem estourar a tela no celular */
+  .grid > * {
+    min-width: 0;
   }
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
@@ -31,16 +33,16 @@
   .card-soft {
     @apply bg-ink-750 rounded-2xl;
   }
-  .card-lime {
-    @apply bg-lime text-black rounded-3xl;
+  .card-brand {
+    @apply bg-brand text-black rounded-3xl;
   }
 
   /* Botões */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold text-sm transition-all active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none;
   }
-  .btn-lime {
-    @apply btn bg-lime text-black hover:bg-lime-300 hover:shadow-glow px-5 py-3;
+  .btn-brand {
+    @apply btn bg-brand text-black hover:bg-brand-300 hover:shadow-glow px-5 py-3;
   }
   .btn-dark {
     @apply btn bg-ink-700 text-white hover:bg-ink-600 px-5 py-3;
@@ -57,7 +59,7 @@
     @apply inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all;
   }
   .pill-on {
-    @apply pill bg-lime text-black shadow-lime;
+    @apply pill bg-brand text-black shadow-brand;
   }
   .pill-off {
     @apply pill bg-ink-750 text-ink-200 hover:bg-ink-700 hover:text-white;
@@ -66,7 +68,7 @@
   /* Inputs */
   .field {
     @apply w-full px-4 py-3.5 rounded-2xl bg-ink-750 border border-transparent text-white placeholder-ink-400 text-sm
-      focus:outline-none focus:border-lime/60 focus:bg-ink-700 transition-colors;
+      focus:outline-none focus:border-brand/60 focus:bg-ink-700 transition-colors;
   }
   .label {
     @apply block text-xs font-medium text-ink-300 mb-1.5 ml-1;
@@ -77,7 +79,7 @@
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold;
   }
   .badge-ok {
-    @apply badge bg-lime/15 text-lime;
+    @apply badge bg-brand/15 text-brand;
   }
   .badge-bad {
     @apply badge bg-[#FF5A36]/15 text-[#FF7A5C];
@@ -98,6 +100,20 @@
   }
   .no-scrollbar {
     scrollbar-width: none;
+  }
+
+  /* Áreas seguras do celular (entalhe e barra de gestos) */
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+  .dock-bottom {
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+  .pb-dock {
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+  .pb-safe {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
   }
 }
 
@@ -197,3 +213,106 @@ html.theme-light .badge-mute {
   color: #475569 !important;
 }
 
+
+/* Barras translúcidas (topo e dock) no modo claro */
+html.theme-light [class*="bg-ink-850/"],
+html.theme-light [class*="bg-ink-900/"],
+html.theme-light [class*="bg-ink-950/"] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.theme-light .bg-ink-900,
+html.theme-light .bg-ink-950 {
+  background-color: #F8FAFC !important;
+}
+
+/* Texto sobre foto continua claro no modo claro */
+html.theme-light .on-photo .text-white,
+html.theme-light .on-photo .text-ink-100,
+html.theme-light .on-photo .text-ink-200 {
+  color: #FFFFFF !important;
+}
+html.theme-light .on-photo .text-ink-300 {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Login é sempre escuro, mesmo com o tema claro salvo */
+html.theme-light .login-screen .text-white {
+  color: #FFFFFF !important;
+}
+
+/* ================= Tela de login (experiência mobile) ================= */
+
+@keyframes login-aurora {
+  0% {
+    transform: translate3d(-6%, -4%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(7%, 8%, 0) scale(1.18);
+  }
+  100% {
+    transform: translate3d(-2%, 5%, 0) scale(1.05);
+  }
+}
+
+@keyframes login-aurora-reverse {
+  0% {
+    transform: translate3d(6%, 4%, 0) scale(1.1);
+  }
+  50% {
+    transform: translate3d(-8%, -6%, 0) scale(0.95);
+  }
+  100% {
+    transform: translate3d(3%, -8%, 0) scale(1.15);
+  }
+}
+
+@keyframes login-sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-aurora {
+  animation: login-aurora 16s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.login-aurora-slow {
+  animation: login-aurora 24s ease-in-out infinite alternate-reverse;
+  will-change: transform;
+}
+
+.login-aurora-reverse {
+  animation: login-aurora-reverse 20s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.login-sheet {
+  animation: login-sheet-up 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-grain {
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-aurora,
+  .login-aurora-slow,
+  .login-aurora-reverse,
+  .login-sheet {
+    animation: none !important;
+  }
+  .login-screen img {
+    transition: none !important;
+  }
+}

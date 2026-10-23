@@ -31,7 +31,7 @@ export default function PayModal({ invoice, onClose, onDone }: { invoice: Invoic
       footer={
         <>
           <button className="btn-ghost" onClick={onClose}>Cancelar</button>
-          <button className="btn-lime" disabled={busy} onClick={submit}>{busy ? "Registrando…" : `Receber ${brl(total)}`}</button>
+          <button className="btn-brand" disabled={busy} onClick={submit}>{busy ? "Registrando…" : `Receber ${brl(total)}`}</button>
         </>
       }
     >

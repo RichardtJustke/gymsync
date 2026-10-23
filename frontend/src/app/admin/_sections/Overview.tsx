@@ -8,6 +8,7 @@ import { useAsync } from "@/lib/hooks";
 import { brl, dateBR, timeBR, INVOICE_STATUS, whatsappLink } from "@/lib/format";
 import { ErrorBox, Loading, PageHead } from "./shared";
 import type { Permission } from "@/types";
+import { BRAND } from "@/lib/brand";
 
 export default function Overview({ can, go }: { can: (...p: Permission[]) => boolean; go: (tab: string) => void }) {
   const { data: s, loading, error, reload } = useAsync(() => api.getDashboardStats(), []);
@@ -19,10 +20,10 @@ export default function Overview({ can, go }: { can: (...p: Permission[]) => boo
 
   const alerts: { tone: "bad" | "warn"; text: string; tab?: string }[] = [];
   if (s.uncovered_sessions > 0) alerts.push({ tone: "bad", text: `${s.uncovered_sessions} aula(s) dos próximos 7 dias estão sem professor(a)`, tab: "agenda" });
-  if (s.show_finance && s.delinquent_students > 0) alerts.push({ tone: "bad", text: `${s.delinquent_students} aluno(s) com mensalidade vencida (${brl(s.overdue_total)})`, tab: "financeiro" });
+  if (s.show_finance && s.delinquent_students > 0) alerts.push({ tone: "bad", text: `${s.delinquent_students} aluna(s) com mensalidade vencida (${brl(s.overdue_total)})`, tab: "financeiro" });
   if (s.equipment_issues > 0) alerts.push({ tone: "warn", text: `${s.equipment_issues} equipamento(s) em atenção ou manutenção`, tab: "config" });
   if (s.new_leads > 0) alerts.push({ tone: "warn", text: `${s.new_leads} lead(s) novo(s) esperando contato`, tab: "leads" });
-  if (s.without_workout_count > 0) alerts.push({ tone: "warn", text: `${s.without_workout_count} aluno(s) ativo(s) sem ficha de treino`, tab: "alunos" });
+  if (s.without_workout_count > 0) alerts.push({ tone: "warn", text: `${s.without_workout_count} aluna(s) ativa(s) sem ficha de treino`, tab: "alunos" });
 
   return (
     <div className="space-y-6">
@@ -39,12 +40,12 @@ export default function Overview({ can, go }: { can: (...p: Permission[]) => boo
       )}
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<Users className="w-4 h-4" />} label="Alunos ativos" value={s.active_students} hint={`${s.total_students} matrículas no total`}
+        <StatCard icon={<Users className="w-4 h-4" />} label="Alunas ativas" value={s.active_students} hint={`${s.total_students} matrículas no total`}
           progress={s.total_students ? (s.active_students / s.total_students) * 100 : 0} />
         <StatCard icon={<CheckCircle2 className="w-4 h-4" />} label="Check-ins hoje" value={s.today_checkins}
           hint={`${occupancy(s.active_students, s.today_checkins)}% dos ativos`} progress={occupancy(s.active_students, s.today_checkins)} />
         {s.show_finance ? (
-          <StatCard variant="lime" icon={<Wallet className="w-4 h-4" />} label="Recebido no mês" value={brl(s.monthly_revenue)}
+          <StatCard variant="brand" icon={<Wallet className="w-4 h-4" />} label="Recebido no mês" value={brl(s.monthly_revenue)}
             hint={`de ${brl(s.expected_revenue)} previstos`} progress={receivedPct} />
         ) : (
           <StatCard icon={<Handshake className="w-4 h-4" />} label="Vendas no mês" value={s.sales_month} hint="matrículas e renovações" />
@@ -62,14 +63,14 @@ export default function Overview({ can, go }: { can: (...p: Permission[]) => boo
             <ul className="space-y-2">
               {s.today_sessions.map((t) => (
                 <li key={t.id} className="card-soft p-3.5 flex items-center gap-3">
-                  <span className="w-1.5 self-stretch rounded-full" style={{ background: t.color || "#D7FF3A" }} />
+                  <span className="w-1.5 self-stretch rounded-full" style={{ background: t.color || BRAND }} />
                   <div className="min-w-[52px] text-sm font-semibold text-white">{timeBR(t.starts_at)}</div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-white truncate">{t.title}</div>
                     <div className="text-xs text-ink-300 truncate">{t.teacher || "Sem professor(a)"}</div>
                   </div>
                   {t.status === "CANCELADA" ? <Tag tone="mute">Cancelada</Tag> : (
-                    <div className="w-28">
+                    <div className="w-20 sm:w-28 shrink-0">
                       <div className="text-[11px] text-ink-300 text-right mb-1">{t.booked}/{t.capacity} vagas</div>
                       <Progress value={occupancy(t.capacity, t.booked)} height={6} />
                     </div>
@@ -91,7 +92,7 @@ export default function Overview({ can, go }: { can: (...p: Permission[]) => boo
                 <li key={c.id} className="flex items-center gap-3">
                   <Avatar name={c.student?.user?.name} size={36} tone="dark" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white truncate">{c.student?.user?.name || "Aluno"}</div>
+                    <div className="text-sm text-white truncate">{c.student?.user?.name || "Aluna"}</div>
                     <div className="text-[11px] text-ink-300">{dateBR(c.created_at)} · {timeBR(c.created_at)}</div>
                   </div>
                   <Tag tone="mute">{c.method === "MANUAL" ? "Manual" : "QR"}</Tag>
@@ -126,9 +127,9 @@ export default function Overview({ can, go }: { can: (...p: Permission[]) => boo
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="card-soft p-4 flex items-center gap-3"><Users className="w-5 h-5 text-lime" /><div><div className="text-lg font-semibold text-white">{s.staff_active}</div><div className="text-xs text-ink-300">pessoas na equipe</div></div></div>
-        <div className="card-soft p-4 flex items-center gap-3"><Handshake className="w-5 h-5 text-lime" /><div><div className="text-lg font-semibold text-white">{s.sales_month}</div><div className="text-xs text-ink-300">vendas no mês</div></div></div>
-        <div className="card-soft p-4 flex items-center gap-3"><Wrench className="w-5 h-5 text-lime" /><div><div className="text-lg font-semibold text-white">{s.equipment_issues}</div><div className="text-xs text-ink-300">equipamentos com problema</div></div></div>
+        <div className="card-soft p-4 flex items-center gap-3"><Users className="w-5 h-5 text-brand" /><div><div className="text-lg font-semibold text-white">{s.staff_active}</div><div className="text-xs text-ink-300">pessoas na equipe</div></div></div>
+        <div className="card-soft p-4 flex items-center gap-3"><Handshake className="w-5 h-5 text-brand" /><div><div className="text-lg font-semibold text-white">{s.sales_month}</div><div className="text-xs text-ink-300">vendas no mês</div></div></div>
+        <div className="card-soft p-4 flex items-center gap-3"><Wrench className="w-5 h-5 text-brand" /><div><div className="text-lg font-semibold text-white">{s.equipment_issues}</div><div className="text-xs text-ink-300">equipamentos com problema</div></div></div>
       </div>
     </div>
   );

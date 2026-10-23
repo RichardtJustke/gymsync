@@ -61,7 +61,7 @@ export default function QrScanner({ onScan, onCancel }: { onScan: (value: string
       ) : (
         <div className="relative rounded-3xl overflow-hidden bg-black aspect-square">
           <video ref={video} playsInline muted className="w-full h-full object-cover" />
-          <div className="absolute inset-8 rounded-3xl border-2 border-lime/80 pointer-events-none" />
+          <div className="absolute inset-8 rounded-3xl border-2 border-brand/80 pointer-events-none" />
         </div>
       )}
       <button className="btn-dark w-full" onClick={onCancel}>Fechar câmera</button>

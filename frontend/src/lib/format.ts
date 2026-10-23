@@ -46,7 +46,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   RECEPCAO: "Recepção",
   CONSULTOR: "Consultor(a)",
   PROFESSOR: "Professor(a)",
-  ALUNO: "Aluno(a)",
+  ALUNO: "Aluna",
 };
 
 export const STUDENT_STATUS: Record<StudentStatus, { label: string; tone: "ok" | "bad" | "warn" | "mute" }> = {

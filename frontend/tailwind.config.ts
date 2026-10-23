@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { BRAND_RGB, brandScale } from "./src/lib/brand";
 
 const config: Config = {
   content: [
@@ -13,20 +14,8 @@ const config: Config = {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       colors: {
-        // Acento neon lima (inspirado nas referências)
-        lime: {
-          DEFAULT: "#D7FF3A",
-          50: "#F8FFE0",
-          100: "#EFFFB3",
-          200: "#E6FF80",
-          300: "#DDFF5C",
-          400: "#D7FF3A",
-          500: "#C2EB1F",
-          600: "#9CC00F",
-          700: "#73900A",
-          800: "#4A5D06",
-          900: "#232C03",
-        },
+        // Acento da marca (coral da logo)
+        brand: brandScale,
         // Superfícies escuras
         ink: {
           950: "#000000",
@@ -48,8 +37,8 @@ const config: Config = {
         "5xl": "2.5rem",
       },
       boxShadow: {
-        lime: "0 0 0 1px rgba(215,255,58,0.25), 0 10px 40px -10px rgba(215,255,58,0.45)",
-        glow: "0 0 24px rgba(215,255,58,0.35)",
+        brand: `0 0 0 1px rgba(${BRAND_RGB},0.25), 0 10px 40px -10px rgba(${BRAND_RGB},0.45)`,
+        glow: `0 0 24px rgba(${BRAND_RGB},0.35)`,
         card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 40px -20px rgba(0,0,0,0.8)",
       },
       keyframes: {

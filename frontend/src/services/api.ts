@@ -109,6 +109,8 @@ export type TempCredentials = { login: string; temp_password: string };
 
 export const api = {
   registerDevice: (token: string, platform: string) => send<{ success: boolean }>("POST", "/devices", { token, platform }),
+  /* ------------------------------ Público ------------------------------ */
+  publicGym: () => get<{ name: string; phone: string; address: string; email: string }>("/public/gym"),
   /* ------------------------------ Conta ------------------------------ */
   async login(identifier: string, password: string) {
     const data = await send<{ token: string; user: User; gym: Gym; permissions: Permission[] }>("POST", "/auth/login", { identifier, password });

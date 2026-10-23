@@ -51,7 +51,7 @@ export default function Reception() {
 
   return (
     <div className="space-y-6">
-      <PageHead title="Recepção" subtitle="Mostre o QR para o aluno escanear no app, ou registre a entrada à mão" />
+      <PageHead title="Recepção" subtitle="Mostre o QR para a aluna escanear no app, ou registre a entrada à mão" />
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card p-6 flex flex-col items-center text-center">
           <SectionHeader title="QR de entrada" />
@@ -59,7 +59,7 @@ export default function Reception() {
             <>
               <div className="bg-white p-4 rounded-3xl"><QRCodeSVG value={qr.payload} size={232} level="M" /></div>
               <div className="mt-4 font-mono text-3xl tracking-[0.3em] text-white">{qr.code}</div>
-              <div className="mt-2 text-xs text-ink-300">Renova em {qr.left}s · o aluno também pode digitar o código no app</div>
+              <div className="mt-2 text-xs text-ink-300">Renova em {qr.left}s · a aluna também pode digitar o código no app</div>
             </>
           )}
         </section>
@@ -80,13 +80,13 @@ export default function Reception() {
                     <Avatar name={s.user.name} size={38} tone="dark" />
                     <div className="flex-1 min-w-0"><div className="text-sm text-white truncate">{s.user.name}</div><div className="text-[11px] text-ink-300">{s.plan_name || "Sem plano"}</div></div>
                     <Tag tone={st.tone}>{st.label}</Tag>
-                    <button className="btn-lime px-4 py-2 text-xs" disabled={busy} onClick={() => checkIn(s.id, s.user.name)}>Liberar</button>
+                    <button className="btn-brand px-4 py-2 text-xs" disabled={busy} onClick={() => checkIn(s.id, s.user.name)}>Liberar</button>
                   </li>
                 );
               })}
             </ul>
           )}
-          <p className="text-[11px] text-ink-400 mt-3">Alunos inadimplentes ou cancelados não têm a entrada liberada.</p>
+          <p className="text-[11px] text-ink-400 mt-3">Alunas inadimplentes ou canceladas não têm a entrada liberada.</p>
         </section>
       </div>
 

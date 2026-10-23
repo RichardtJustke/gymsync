@@ -60,7 +60,7 @@ func (h *WorkoutsHandler) GetMyWorkouts(w http.ResponseWriter, r *http.Request) 
 	gymID := middleware.GetGymIDFromContext(r.Context())
 
 	var student domain.Student
-	if err := h.db.Where("gym_id = ? AND user_id = ?", gymID, claims.UserID).First(&student).Error; err != nil {
+	if err := h.db.Preload("User").Where("gym_id = ? AND user_id = ?", gymID, claims.UserID).First(&student).Error; err != nil {
 		respondJSON(w, http.StatusNotFound, map[string]string{"error": "Perfil de aluno não encontrado"})
 		return
 	}

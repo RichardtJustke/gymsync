@@ -50,7 +50,7 @@ export default function Finance({ can }: { can: (...p: Permission[]) => boolean 
     if (html) setBoleto(html);
   };
   const exportCsv = () =>
-    downloadCSV(`financeiro-${month}.csv`, ["Aluno", "Descrição", "Vencimento", "Valor", "Desconto", "Situação", "Pago em", "Forma"],
+    downloadCSV(`financeiro-${month}.csv`, ["Aluna", "Descrição", "Vencimento", "Valor", "Desconto", "Situação", "Pago em", "Forma"],
       (list.data || []).map((i) => [i.student?.user?.name || "", i.description, dateBR(i.due_date), i.amount, i.discount, INVOICE_STATUS[i.status].label, dateBR(i.paid_at), methodLabel(i.payment_method)]));
 
   return (
@@ -62,7 +62,7 @@ export default function Finance({ can }: { can: (...p: Permission[]) => boolean 
           <>
             <MonthPicker value={month} onChange={setMonth} label={monthLabel} />
             {manage && <button className="btn-dark" disabled={busy} onClick={generate}><RefreshCw className="w-4 h-4" />Gerar mensalidades</button>}
-            {manage && <button className="btn-lime" onClick={() => setShowNew(true)}><FilePlus2 className="w-4 h-4" />Cobrança avulsa</button>}
+            {manage && <button className="btn-brand" onClick={() => setShowNew(true)}><FilePlus2 className="w-4 h-4" />Cobrança avulsa</button>}
           </>
         }
       />
@@ -70,9 +70,9 @@ export default function Finance({ can }: { can: (...p: Permission[]) => boolean 
       {summary.error ? <ErrorBox message={summary.error} onRetry={summary.reload} /> : !s ? <Loading rows={2} /> : (
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-            <StatCard variant="lime" icon={<Wallet className="w-4 h-4" />} label="Recebido" value={brl(s.received)} hint={`${s.received_count} pagamento(s)`} progress={s.expected ? (s.received / s.expected) * 100 : 0} />
+            <StatCard variant="brand" icon={<Wallet className="w-4 h-4" />} label="Recebido" value={brl(s.received)} hint={`${s.received_count} pagamento(s)`} progress={s.expected ? (s.received / s.expected) * 100 : 0} />
             <StatCard icon={<Clock className="w-4 h-4" />} label="A receber no mês" value={brl(s.pending)} hint={`${s.pending_count} cobrança(s) em aberto`} />
-            <StatCard icon={<AlertCircle className="w-4 h-4" />} label="Total vencido" value={brl(s.overdue_total)} hint={`${s.delinquent_students} aluno(s) · todos os meses`} accent="#FF7A5C" />
+            <StatCard icon={<AlertCircle className="w-4 h-4" />} label="Total vencido" value={brl(s.overdue_total)} hint={`${s.delinquent_students} aluna(s) · todos os meses`} accent="#FF7A5C" />
             <StatCard icon={<Percent className="w-4 h-4" />} label="Descontos dados" value={brl(s.discounts)} hint="no mês" />
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
@@ -97,7 +97,7 @@ export default function Finance({ can }: { can: (...p: Permission[]) => boolean 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
           <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
-          <input className="field pl-11" placeholder="Buscar aluno ou descrição" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="field pl-11" placeholder="Buscar aluna ou descrição" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <PillTabs tabs={FILTERS} value={filter} onChange={setFilter} />
         <button className="btn-dark" onClick={exportCsv} disabled={!list.data?.length}><Download className="w-4 h-4" />CSV</button>
@@ -124,7 +124,7 @@ export default function Finance({ can }: { can: (...p: Permission[]) => boolean 
                     <div className="flex gap-2">
                       {isOpen && wa && <a className="btn-dark px-3 py-2 text-xs hover:text-emerald-400" href={wa} target="_blank" rel="noreferrer">Cobrar WhatsApp</a>}
                       {isOpen && <button className="btn-dark px-3 py-2 text-xs" onClick={() => openBoleto(inv)}>Boleto</button>}
-                      {isOpen && manage && <button className="btn-lime px-3 py-2 text-xs" onClick={() => setPay(inv)}>Receber</button>}
+                      {isOpen && manage && <button className="btn-brand px-3 py-2 text-xs" onClick={() => setPay(inv)}>Receber</button>}
                       {isOpen && manage && <button className="btn-ghost px-3 py-2 text-xs" onClick={() => setCancel(inv)}>Cancelar</button>}
                     </div>
                   </li>
@@ -162,12 +162,12 @@ function NewInvoiceModal({ onClose, onDone }: { onClose: () => void; onDone: () 
 
   return (
     <Modal title="Cobrança avulsa" onClose={onClose} width="max-w-md"
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || !student || f.amount <= 0}
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || !student || f.amount <= 0}
         onClick={async () => { const r = await run(() => api.createInvoice({ student_id: student!.id, ...f }), "Cobrança lançada"); if (r) { onDone(); onClose(); } }}>Lançar</button></>}>
       {student ? (
         <div className="card-soft p-3 flex items-center justify-between text-sm"><span className="text-white">{student.name}</span><button className="btn-ghost px-3 py-1.5" onClick={() => setStudent(null)}>Trocar</button></div>
       ) : (
-        <Field label="Aluno">
+        <Field label="Aluna">
           <input className="field" placeholder="Digite o nome" value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
           {found.data && (
             <ul className="mt-2 space-y-1">

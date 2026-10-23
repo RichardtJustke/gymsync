@@ -29,7 +29,7 @@ function ProfessorContent() {
   const [activePlans, setActivePlans] = useState<WorkoutPlan[]>([]);
   const [todayCheckins, setTodayCheckins] = useState<any[]>([]);
 
-  // Filtros de Aluno
+  // Filtros de Aluna
   const [studentFilter, setStudentFilter] = useState("");
   const [studentFilterMode, setStudentFilterMode] = useState<"ALL" | "TODAY" | "NO_PLAN">("ALL");
 
@@ -84,7 +84,7 @@ function ProfessorContent() {
   const [saveTmplDesc, setSaveTmplDesc] = useState("");
   const [savingTemplate, setSavingTemplate] = useState(false);
 
-  // Modal de Avaliação Física do Aluno
+  // Modal de Avaliação Física da Aluna
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [assessments, setAssessments] = useState<PhysicalAssessment[]>([]);
   const [loadingAssessments, setLoadingAssessments] = useState(false);
@@ -133,7 +133,7 @@ function ProfessorContent() {
       }
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Não foi possível carregar os alunos");
+      toast.error(err.message || "Não foi possível carregar as alunas");
     }
   };
 
@@ -503,7 +503,7 @@ function ProfessorContent() {
     });
 
     return Object.entries(map).map(([group, data]) => {
-      let badgeClass = "badge-ok text-lime border-lime/30";
+      let badgeClass = "badge-ok text-brand border-brand/30";
       let statusLabel = "Hipertrofia Ótima (10-20)";
       if (data.sets < 10) {
         badgeClass = "bg-amber-500/10 text-amber-300 border-amber-500/20";
@@ -540,12 +540,12 @@ function ProfessorContent() {
     if (!selectedStudent) return;
     const phone = selectedStudent.user?.phone?.replace(/\D/g, "");
     if (!phone) {
-      toast.error("Aluno não possui telefone cadastrado!");
+      toast.error("Aluna não possui telefone cadastrado!");
       return;
     }
 
     let text = `🏋️ *GymSync - Nova Ficha de Treino*\n`;
-    text += `👤 *Aluno:* ${selectedStudent.user?.name}\n`;
+    text += `👤 *Aluna:* ${selectedStudent.user?.name}\n`;
     text += `🎯 *Objetivo:* ${planGoal}\n`;
     text += `📋 *Ficha:* ${planTitle}\n\n`;
 
@@ -562,7 +562,7 @@ function ProfessorContent() {
     text += `Bons treinos! Qualquer dúvida, chame o professor na academia. 💪`;
 
     window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(text)}`, "_blank");
-    toast.success("Abrindo WhatsApp para enviar ficha ao aluno!");
+    toast.success("Abrindo WhatsApp para enviar ficha à aluna!");
   };
 
   // Tempo decorrido desde o check-in
@@ -577,13 +577,13 @@ function ProfessorContent() {
   };
 
   return (
-    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 print:p-0">
+    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 print:p-0">
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 animate-fade-up print:hidden">
         <div>
           <div className="eyebrow mb-2">Treinos</div>
           <h1 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
-            Prescrição de <span className="text-lime">treinos</span>
+            Prescrição de <span className="text-brand">treinos</span>
           </h1>
           <p className="text-sm text-ink-300 mt-2">
             Templates rápidos, técnicas avançadas, reordenação de exercícios e acompanhamento do salão.
@@ -591,12 +591,12 @@ function ProfessorContent() {
         </div>
 
         {/* Live Salão e Ações Rápidas */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             onClick={() => setShowNewExerciseModal(true)}
             className="btn-dark !py-2.5 text-xs font-semibold"
           >
-            <Plus className="w-4 h-4 text-lime" /> Novo Exercício
+            <Plus className="w-4 h-4 text-brand" /> Novo Exercício
           </button>
 
           <button
@@ -612,16 +612,16 @@ function ProfessorContent() {
             className="flex items-center gap-3 pl-2 pr-4 py-2 rounded-full bg-ink-800 hover:bg-ink-750 border border-white/[0.04] transition-all cursor-pointer group"
             title="Clique para ver quem está treinando agora"
           >
-            <span className="relative w-10 h-10 rounded-full bg-lime/15 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="w-2.5 h-2.5 rounded-full bg-lime animate-ping absolute" />
-              <span className="w-2.5 h-2.5 rounded-full bg-lime" />
+            <span className="relative w-10 h-10 rounded-full bg-brand/15 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="w-2.5 h-2.5 rounded-full bg-brand animate-ping absolute" />
+              <span className="w-2.5 h-2.5 rounded-full bg-brand" />
             </span>
             <div className="leading-tight text-left">
               <div className="text-[11px] text-ink-300 flex items-center gap-1">
                 <span>Entradas hoje</span>
               </div>
-              <div className="text-sm font-semibold text-white group-hover:text-lime transition-colors">
-                {todayCheckins.length} alunos
+              <div className="text-sm font-semibold text-white group-hover:text-brand transition-colors">
+                {todayCheckins.length} {todayCheckins.length === 1 ? "aluna" : "alunas"}
               </div>
             </div>
           </button>
@@ -629,11 +629,11 @@ function ProfessorContent() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4">
-        {/* Coluna 1: Seleção de Aluno */}
+        {/* Coluna 1: Seleção de Aluna */}
         <aside className="card p-4 space-y-3 h-fit lg:sticky lg:top-28 print:hidden">
           <div className="flex items-center justify-between px-1">
             <h3 className="section-title flex items-center gap-2">
-              <User className="w-4 h-4 text-lime" /> Alunos
+              <User className="w-4 h-4 text-brand" /> Alunas
             </h3>
             <span className="badge-mute">{visibleStudents.length}</span>
           </div>
@@ -642,7 +642,7 @@ function ProfessorContent() {
             <Search className="w-4 h-4 text-ink-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Filtrar aluno..."
+              placeholder="Filtrar aluna..."
               value={studentFilter}
               onChange={(e) => setStudentFilter(e.target.value)}
               className="field !rounded-full !py-2.5 pl-11"
@@ -653,13 +653,13 @@ function ProfessorContent() {
           <div className="flex items-center gap-1 p-1 bg-ink-750 rounded-full text-[11px]">
             <button
               onClick={() => setStudentFilterMode("ALL")}
-              className={`flex-1 py-1.5 rounded-full font-semibold transition-all ${studentFilterMode === "ALL" ? "bg-lime text-black" : "text-ink-300 hover:text-white"}`}
+              className={`flex-1 py-1.5 rounded-full font-semibold transition-all ${studentFilterMode === "ALL" ? "bg-brand text-black" : "text-ink-300 hover:text-white"}`}
             >
               Todos ({students.length})
             </button>
             <button
               onClick={() => setStudentFilterMode("TODAY")}
-              className={`flex-1 py-1.5 rounded-full font-semibold transition-all ${studentFilterMode === "TODAY" ? "bg-lime text-black" : "text-ink-300 hover:text-white"}`}
+              className={`flex-1 py-1.5 rounded-full font-semibold transition-all ${studentFilterMode === "TODAY" ? "bg-brand text-black" : "text-ink-300 hover:text-white"}`}
             >
               No Salão ({todayCheckins.length})
             </button>
@@ -673,7 +673,7 @@ function ProfessorContent() {
                 <button
                   key={std.id}
                   onClick={() => selectStudent(std)}
-                  className={`w-full text-left p-2.5 rounded-2xl transition-all flex items-center gap-3 ${on ? "bg-lime text-black" : "hover:bg-ink-750"}`}
+                  className={`w-full text-left p-2.5 rounded-2xl transition-all flex items-center gap-3 ${on ? "bg-brand text-black" : "hover:bg-ink-750"}`}
                 >
                   <Avatar name={std.user?.name} size={38} tone={on ? "dark" : "dark"} />
                   <div className="min-w-0 flex-1">
@@ -686,7 +686,7 @@ function ProfessorContent() {
                     <div className={`text-[11px] flex items-center gap-1.5 ${on ? "text-black/60" : "text-ink-300"}`}>
                       <span className="truncate">{std.plan_name}</span>
                       <span
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${std.status === "ATIVO" ? (on ? "bg-black" : "bg-lime") : "bg-[#FF5A36]"}`}
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${std.status === "ATIVO" ? (on ? "bg-black" : "bg-brand") : "bg-[#FF5A36]"}`}
                       />
                     </div>
                   </div>
@@ -700,8 +700,8 @@ function ProfessorContent() {
         <div className="space-y-4 min-w-0">
           {selectedStudent && (
             <>
-              {/* Hero do Aluno Selecionado */}
-              <div className="relative rounded-4xl overflow-hidden min-h-[200px] animate-fade-up print:bg-white print:text-black">
+              {/* Hero da Aluna Selecionada */}
+              <div className="on-photo relative rounded-4xl overflow-hidden min-h-[200px] animate-fade-up print:bg-white print:text-black">
                 <img src={IMG.woman} alt="" className="absolute inset-0 w-full h-full object-cover object-[center_30%] print:hidden" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/30 print:hidden" />
                 <div className="relative p-6 sm:p-8 h-full flex flex-col justify-between gap-6 min-h-[200px]">
@@ -714,7 +714,7 @@ function ProfessorContent() {
 
                   <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
                     <div>
-                      <div className="text-xs text-lime font-semibold mb-1">Prescrevendo ficha de treino</div>
+                      <div className="text-xs text-brand font-semibold mb-1">Prescrevendo ficha de treino</div>
                       <h2 className="text-3xl font-semibold text-white tracking-tight">{selectedStudent.user?.name}</h2>
                       <div className="text-xs text-ink-200 mt-1">
                         CPF {selectedStudent.user?.document || "N/A"} · {selectedStudent.plan_name} · Peso {selectedStudent.weight || "—"}kg
@@ -723,11 +723,11 @@ function ProfessorContent() {
 
                     {/* Biblioteca de Modelos e Avaliação Física */}
                     <div className="flex flex-wrap items-center gap-2 print:hidden">
-                      <button onClick={openTemplatesModal} className="btn-lime !py-2.5 text-xs shadow-glow">
+                      <button onClick={openTemplatesModal} className="btn-brand !py-2.5 text-xs shadow-glow">
                         <BookOpen className="w-4 h-4" /> Biblioteca de Modelos
                       </button>
                       <button onClick={openAssessmentModal} className="btn bg-white/10 backdrop-blur text-white hover:bg-white/20 px-3.5 py-2.5 text-xs">
-                        <Activity className="w-4 h-4 text-lime" /> Avaliação Física
+                        <Activity className="w-4 h-4 text-brand" /> Avaliação Física
                       </button>
                     </div>
                   </div>
@@ -750,7 +750,7 @@ function ProfessorContent() {
               <div className="card p-5 space-y-4 print:hidden">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-lime/10 text-lime flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex items-center justify-center shrink-0">
                       <BarChart3 className="w-5 h-5" />
                     </div>
                     <div>
@@ -784,13 +784,13 @@ function ProfessorContent() {
                           <div key={vg.group} className="p-3.5 rounded-2xl bg-ink-750/70 border border-white/5 space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="font-semibold text-white text-sm">{vg.group}</span>
-                              <span className="text-sm font-bold text-lime">
+                              <span className="text-sm font-bold text-brand">
                                 {vg.sets} <span className="text-[11px] font-normal text-ink-300">séries</span>
                               </span>
                             </div>
                             <div className="w-full bg-ink-850 h-2 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-lime rounded-full transition-all duration-500"
+                                className="h-full bg-brand rounded-full transition-all duration-500"
                                 style={{ width: `${vg.percent}%` }}
                               />
                             </div>
@@ -814,7 +814,7 @@ function ProfessorContent() {
                       const on = activeWorkoutTab === idx;
                       return (
                         <button key={w.letter} onClick={() => setActiveWorkoutTab(idx)} className={on ? "pill-on" : "pill-off"}>
-                          <span className={`w-6 h-6 -ml-2 rounded-full flex items-center justify-center text-xs font-bold ${on ? "bg-black text-lime" : "bg-ink-600 text-white"}`}>
+                          <span className={`w-6 h-6 -ml-2 rounded-full flex items-center justify-center text-xs font-bold ${on ? "bg-black text-brand" : "bg-ink-600 text-white"}`}>
                             {w.letter}
                           </span>
                           Treino {w.letter}
@@ -832,7 +832,7 @@ function ProfessorContent() {
                           { letter: nextLetter, name: `Divisão ${nextLetter}`, description: "", items: [] },
                         ]);
                       }}
-                      className="btn-icon bg-ink-750 text-ink-300 hover:bg-lime hover:text-black shrink-0"
+                      className="btn-icon bg-ink-750 text-ink-300 hover:bg-brand hover:text-black shrink-0"
                       title="Adicionar mais uma divisão"
                     >
                       <Plus className="w-5 h-5" />
@@ -844,7 +844,7 @@ function ProfessorContent() {
                     className="btn-dark !py-2 !px-3 text-xs text-ink-200 hover:text-white shrink-0 print:hidden"
                     title={`Criar uma cópia da Divisão ${currentWorkout?.letter}`}
                   >
-                    <Copy className="w-3.5 h-3.5 text-lime" /> Duplicar Treino {currentWorkout?.letter}
+                    <Copy className="w-3.5 h-3.5 text-brand" /> Duplicar Treino {currentWorkout?.letter}
                   </button>
                 </div>
 
@@ -869,7 +869,7 @@ function ProfessorContent() {
                             <button
                               onClick={() => moveExercise(itemIdx, "up")}
                               disabled={itemIdx === 0}
-                              className="text-ink-400 hover:text-lime disabled:opacity-20 p-0.5"
+                              className="text-ink-400 hover:text-brand disabled:opacity-20 p-0.5"
                               title="Subir na ordem"
                             >
                               <ArrowUp className="w-3.5 h-3.5" />
@@ -877,14 +877,14 @@ function ProfessorContent() {
                             <button
                               onClick={() => moveExercise(itemIdx, "down")}
                               disabled={itemIdx === currentWorkout.items.length - 1}
-                              className="text-ink-400 hover:text-lime disabled:opacity-20 p-0.5"
+                              className="text-ink-400 hover:text-brand disabled:opacity-20 p-0.5"
                               title="Descer na ordem"
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
                             </button>
                           </div>
 
-                          <div className="w-11 h-11 rounded-2xl bg-lime text-black flex items-center justify-center font-bold shrink-0">
+                          <div className="w-11 h-11 rounded-2xl bg-brand text-black flex items-center justify-center font-bold shrink-0">
                             {String(itemIdx + 1).padStart(2, "0")}
                           </div>
 
@@ -907,7 +907,7 @@ function ProfessorContent() {
                           <select
                             value={it.technique || "Padrão"}
                             onChange={(e) => updateItem(itemIdx, { technique: e.target.value })}
-                            className="bg-ink-850 text-xs text-lime font-semibold px-3 py-2 rounded-full border border-white/5 focus:outline-none"
+                            className="bg-ink-850 text-xs text-brand font-semibold px-3 py-2 rounded-full border border-white/5 focus:outline-none"
                           >
                             <option value="Padrão">Padrão</option>
                             <option value="Bi-Set">Bi-Set</option>
@@ -920,7 +920,7 @@ function ProfessorContent() {
                           {[
                             { k: "Séries", v: it.sets, type: "number", w: "w-8", on: (v: string) => updateItem(itemIdx, { sets: parseInt(v) || 1 }) },
                             { k: "Reps", v: it.reps, type: "text", w: "w-12", on: (v: string) => updateItem(itemIdx, { reps: v }) },
-                            { k: "Kg", v: it.load_kg, type: "number", w: "w-10", on: (v: string) => updateItem(itemIdx, { load_kg: parseFloat(v) || 0 }), lime: true },
+                            { k: "Kg", v: it.load_kg, type: "number", w: "w-10", on: (v: string) => updateItem(itemIdx, { load_kg: parseFloat(v) || 0 }), brand: true },
                             { k: "Desc.", v: it.rest_seconds, type: "number", w: "w-9", on: (v: string) => updateItem(itemIdx, { rest_seconds: parseInt(v) || 30 }), suffix: "s" },
                           ].map((f) => (
                             <label key={f.k} className="flex items-center gap-1.5 bg-ink-850 pl-3 pr-2 py-2 rounded-full border border-white/5">
@@ -929,7 +929,7 @@ function ProfessorContent() {
                                 type={f.type}
                                 value={f.v}
                                 onChange={(e) => f.on(e.target.value)}
-                                className={`${f.w} bg-transparent font-semibold text-center text-sm focus:outline-none ${f.lime ? "text-lime" : "text-white"}`}
+                                className={`${f.w} bg-transparent font-semibold text-center text-sm focus:outline-none ${f.brand ? "text-brand" : "text-white"}`}
                               />
                               {f.suffix && <span className="text-[10px] text-ink-400 -ml-1">{f.suffix}</span>}
                             </label>
@@ -979,7 +979,7 @@ function ProfessorContent() {
 
                     <button
                       onClick={() => setShowNewExerciseModal(true)}
-                      className="btn-lime !py-2.5 !px-4 text-xs shrink-0"
+                      className="btn-brand !py-2.5 !px-4 text-xs shrink-0"
                     >
                       <Plus className="w-4 h-4" /> Criar
                     </button>
@@ -1014,13 +1014,13 @@ function ProfessorContent() {
                       <div className="truncate">
                         <div className="text-sm font-semibold text-white truncate flex items-center gap-1.5">
                           <span>{ex.name}</span>
-                          {ex.video_url && <Video className="w-3 h-3 text-lime shrink-0" />}
+                          {ex.video_url && <Video className="w-3 h-3 text-brand shrink-0" />}
                         </div>
                         <div className="text-[11px] text-ink-300 truncate">
                           {ex.muscle_group} · {ex.equipment}
                         </div>
                       </div>
-                      <span className="w-8 h-8 rounded-full bg-ink-600 group-hover:bg-lime text-ink-200 group-hover:text-black flex items-center justify-center shrink-0 transition-colors">
+                      <span className="w-8 h-8 rounded-full bg-ink-600 group-hover:bg-brand text-ink-200 group-hover:text-black flex items-center justify-center shrink-0 transition-colors">
                         <Plus className="w-4 h-4" />
                       </span>
                     </button>
@@ -1029,15 +1029,15 @@ function ProfessorContent() {
               </div>
 
               {/* Barra Fixa de Salvar */}
-              <div className="sticky bottom-4 z-30 print:hidden">
+              <div className="sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] lg:bottom-4 z-30 print:hidden">
                 <div className="rounded-full bg-ink-850/90 backdrop-blur-xl border border-white/[0.08] p-2.5 pl-6 flex items-center justify-between gap-3 shadow-card">
                   {saveSuccess ? (
-                    <div className="text-sm text-lime font-semibold flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" /> Treino salvo e ativado no app do aluno!
+                    <div className="text-sm text-brand font-semibold flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" /> Treino salvo e ativado no app da aluna!
                     </div>
                   ) : (
                     <div className="text-xs text-ink-300 hidden sm:block">
-                      O aluno receberá a atualização automaticamente no aplicativo.
+                      A aluna receberá a atualização automaticamente no aplicativo.
                     </div>
                   )}
 
@@ -1048,7 +1048,7 @@ function ProfessorContent() {
                       className="btn-dark !py-3 !px-4 text-xs font-semibold"
                       title="Enviar treino formatado no WhatsApp do aluno"
                     >
-                      <Share2 className="w-4 h-4 text-lime" />
+                      <Share2 className="w-4 h-4 text-brand" />
                       <span className="hidden sm:inline">Enviar WhatsApp</span>
                     </button>
 
@@ -1062,14 +1062,14 @@ function ProfessorContent() {
                       className="btn-dark !py-3 !px-4 text-xs font-semibold"
                       title="Salvar configuração atual como modelo reutilizável para a academia"
                     >
-                      <Bookmark className="w-4 h-4 text-lime" />
+                      <Bookmark className="w-4 h-4 text-brand" />
                       <span className="hidden sm:inline">Salvar como Modelo</span>
                     </button>
 
                     <button
                       onClick={handleSaveWorkoutPlan}
                       disabled={saving || workouts[activeWorkoutTab]?.items.length === 0}
-                      className="btn-lime !py-3 font-bold"
+                      className="btn-brand !py-3 font-bold"
                     >
                       <Save className="w-4 h-4" />
                       {saving ? "Salvando..." : "Salvar Ficha de Treino"}
@@ -1084,11 +1084,11 @@ function ProfessorContent() {
 
       {/* MODAL: CADASTRO DE NOVO EXERCÍCIO */}
       {showNewExerciseModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-ink-850 border border-white/10 rounded-4xl max-w-md w-full p-6 space-y-4 shadow-card animate-fade-up">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-ink-850 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-3xl max-h-[92vh] overflow-y-auto pb-safe sm:pb-6 max-w-md w-full p-6 space-y-4 shadow-card animate-fade-up">
             <div className="flex items-center justify-between pb-2 border-b border-white/5">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Dumbbell className="w-5 h-5 text-lime" /> Novo Exercício Customizado
+                <Dumbbell className="w-5 h-5 text-brand" /> Novo Exercício Customizado
               </h3>
               <button onClick={() => setShowNewExerciseModal(false)} className="btn-icon w-8 h-8 bg-ink-700 text-white">
                 <X className="w-4 h-4" />
@@ -1159,7 +1159,7 @@ function ProfessorContent() {
                 <button type="button" onClick={() => setShowNewExerciseModal(false)} className="btn-dark flex-1">
                   Cancelar
                 </button>
-                <button type="submit" disabled={creatingExercise} className="btn-lime flex-1">
+                <button type="submit" disabled={creatingExercise} className="btn-brand flex-1">
                   {creatingExercise ? "Cadastrando..." : "Cadastrar Exercício"}
                 </button>
               </div>
@@ -1170,20 +1170,20 @@ function ProfessorContent() {
 
       {/* MODAL: SALÃO AO VIVO (TRACKER DE ALUNOS NO SALÃO) */}
       {showFloorModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-ink-850 border border-white/10 rounded-4xl max-w-2xl w-full p-6 space-y-5 shadow-card animate-fade-up max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-ink-850 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-card animate-fade-up max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
               <div className="flex items-center gap-3">
-                <span className="relative w-9 h-9 rounded-full bg-lime/15 flex items-center justify-center">
-                  <span className="w-2.5 h-2.5 rounded-full bg-lime animate-ping absolute" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-lime" />
+                <span className="relative w-9 h-9 rounded-full bg-brand/15 flex items-center justify-center">
+                  <span className="w-2.5 h-2.5 rounded-full bg-brand animate-ping absolute" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-brand" />
                 </span>
                 <div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     Entradas de hoje
                   </h3>
                   <p className="text-xs text-ink-300">
-                    {todayCheckins.length} aluno(s) com check-in registrado hoje
+                    {todayCheckins.length} aluna(s) com check-in registrado hoje
                   </p>
                 </div>
               </div>
@@ -1205,7 +1205,7 @@ function ProfessorContent() {
               ) : (
                 todayCheckins.map((chk: any) => {
                   const std = students.find((s) => s.id === chk.student_id) || chk.student;
-                  const name = std?.user?.name || "Aluno";
+                  const name = std?.user?.name || "Aluna";
                   const phone = std?.user?.phone || "";
                   const checkinTime = chk.created_at
                     ? new Date(chk.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -1243,7 +1243,7 @@ function ProfessorContent() {
                             className="btn-dark !py-2 !px-3 text-xs"
                             title="Conversar no WhatsApp"
                           >
-                            <MessageSquare className="w-3.5 h-3.5 text-lime" />
+                            <MessageSquare className="w-3.5 h-3.5 text-brand" />
                             <span className="hidden sm:inline">WhatsApp</span>
                           </a>
                         )}
@@ -1257,7 +1257,7 @@ function ProfessorContent() {
                             setShowFloorModal(false);
                             toast.success(`Carregando ficha de ${name}`);
                           }}
-                          className="btn-lime !py-2 !px-3 text-xs font-semibold"
+                          className="btn-brand !py-2 !px-3 text-xs font-semibold"
                         >
                           Abrir Ficha
                         </button>
@@ -1269,7 +1269,7 @@ function ProfessorContent() {
             </div>
 
             <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-ink-300">
-              <span>Atualizado em tempo real conforme os alunos realizam check-in na catraca/app.</span>
+              <span>Atualizado em tempo real conforme as alunas realizam check-in na catraca/app.</span>
               <button
                 onClick={() => setShowFloorModal(false)}
                 className="btn-dark !py-1.5 !px-4"
@@ -1283,12 +1283,12 @@ function ProfessorContent() {
 
       {/* MODAL: BIBLIOTECA DE MODELOS DE TREINO */}
       {showTemplatesModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-ink-900 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+          <div className="bg-ink-900 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Cabeçalho */}
             <div className="p-5 border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-lime/15 text-lime flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-brand/15 text-brand flex items-center justify-center">
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
@@ -1298,7 +1298,7 @@ function ProfessorContent() {
                       {templateList.length} disponíveis
                     </span>
                   </h3>
-                  <p className="text-xs text-ink-300">Escolha uma ficha pronta para aplicar no aluno com 1 clique</p>
+                  <p className="text-xs text-ink-300">Escolha uma ficha pronta para aplicar na aluna com 1 clique</p>
                 </div>
               </div>
               <button
@@ -1328,7 +1328,7 @@ function ProfessorContent() {
                     key={g}
                     onClick={() => setTemplateGoalFilter(g)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                      templateGoalFilter === g ? "bg-lime text-black" : "bg-ink-750 text-ink-300 hover:text-white"
+                      templateGoalFilter === g ? "bg-brand text-black" : "bg-ink-750 text-ink-300 hover:text-white"
                     }`}
                   >
                     {g}
@@ -1369,7 +1369,7 @@ function ProfessorContent() {
                           onClick={() => setPreviewTemplate(tmpl)}
                           className={`p-3.5 rounded-2xl cursor-pointer transition-all border text-left ${
                             isSelected
-                              ? "bg-lime/10 border-lime/40 text-white"
+                              ? "bg-brand/10 border-brand/40 text-white"
                               : "bg-ink-800/60 border-white/5 hover:border-white/10 text-ink-200"
                           }`}
                         >
@@ -1387,7 +1387,7 @@ function ProfessorContent() {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                            <span className="px-2 py-0.5 rounded-lg bg-white/5 text-[10px] text-lime font-semibold">
+                            <span className="px-2 py-0.5 rounded-lg bg-white/5 text-[10px] text-brand font-semibold">
                               {tmpl.goal}
                             </span>
                             <span className="px-2 py-0.5 rounded-lg bg-white/5 text-[10px] text-ink-300">
@@ -1410,7 +1410,7 @@ function ProfessorContent() {
                   <div className="space-y-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="badge-lime text-[10px]">{previewTemplate.goal}</span>
+                        <span className="badge-brand text-[10px]">{previewTemplate.goal}</span>
                         <span className="badge-mute text-[10px]">{previewTemplate.level}</span>
                         {previewTemplate.gym_id ? (
                           <span className="badge bg-amber-500/15 text-amber-300 text-[10px]">Modelo da Academia</span>
@@ -1430,7 +1430,7 @@ function ProfessorContent() {
                         <div key={w.letter} className="p-3.5 rounded-2xl bg-ink-800/80 border border-white/5 space-y-2">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 rounded-lg bg-lime text-black font-black text-xs flex items-center justify-center">
+                              <span className="w-6 h-6 rounded-lg bg-brand text-black font-black text-xs flex items-center justify-center">
                                 {w.letter}
                               </span>
                               <span className="text-xs font-bold text-white">{w.name}</span>
@@ -1474,9 +1474,9 @@ function ProfessorContent() {
                     </button>
                     <button
                       onClick={() => applyTemplateFromLibrary(previewTemplate)}
-                      className="btn-lime !py-2.5 !px-5 text-xs font-bold shadow-glow"
+                      className="btn-brand !py-2.5 !px-5 text-xs font-bold shadow-glow"
                     >
-                      <Sparkles className="w-4 h-4" /> Aplicar na Ficha do Aluno
+                      <Sparkles className="w-4 h-4" /> Aplicar na Ficha da Aluna
                     </button>
                   </div>
                 )}
@@ -1488,16 +1488,16 @@ function ProfessorContent() {
 
       {/* MODAL: SALVAR TREINO COMO NOVO MODELO */}
       {showSaveTemplateModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-ink-900 border border-white/10 rounded-3xl w-full max-w-lg p-6 space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+          <div className="bg-ink-900 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-3xl max-h-[92vh] overflow-y-auto pb-safe sm:pb-6 w-full max-w-lg p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-lime/15 text-lime flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-brand/15 text-brand flex items-center justify-center">
                   <Bookmark className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">Salvar como Modelo</h3>
-                  <p className="text-xs text-ink-300">Este treino ficará disponível para prescrever a outros alunos</p>
+                  <p className="text-xs text-ink-300">Este treino ficará disponível para prescrever a outras alunas</p>
                 </div>
               </div>
               <button
@@ -1578,7 +1578,7 @@ function ProfessorContent() {
                 type="button"
                 onClick={handleSaveAsTemplate}
                 disabled={savingTemplate || !saveTmplTitle.trim()}
-                className="btn-lime !py-2.5 !px-5 text-xs font-bold"
+                className="btn-brand !py-2.5 !px-5 text-xs font-bold"
               >
                 {savingTemplate ? "Salvando..." : "Salvar na Biblioteca"}
               </button>
@@ -1589,11 +1589,11 @@ function ProfessorContent() {
 
       {/* MODAL: AVALIAÇÃO FÍSICA & MEDIDAS DO ALUNO */}
       {showAssessmentModal && selectedStudent && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-ink-900 border border-white/10 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+          <div className="bg-ink-900 border border-white/10 rounded-t-4xl rounded-b-none sm:rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-lime/15 text-lime flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-brand/15 text-brand flex items-center justify-center">
                   <Activity className="w-5 h-5" />
                 </div>
                 <div>
@@ -1620,7 +1620,7 @@ function ProfessorContent() {
                     </span>
                     <button
                       onClick={() => setShowNewAssessmentForm(true)}
-                      className="btn-lime !py-2 !px-4 text-xs font-bold"
+                      className="btn-brand !py-2 !px-4 text-xs font-bold"
                     >
                       <Plus className="w-4 h-4" /> Nova Avaliação
                     </button>
@@ -1630,7 +1630,7 @@ function ProfessorContent() {
                     <div className="p-8 text-center text-xs text-ink-300">Carregando avaliações...</div>
                   ) : assessments.length === 0 ? (
                     <Empty title="Nenhuma avaliação física cadastrada">
-                      Clique em "Nova Avaliação" para cadastrar o peso e medidas deste aluno.
+                      Clique em "Nova Avaliação" para cadastrar o peso e medidas desta aluna.
                     </Empty>
                   ) : (
                     <div className="space-y-4">
@@ -1659,7 +1659,7 @@ function ProfessorContent() {
                             </div>
                             <div className="p-2.5 rounded-xl bg-ink-750">
                               <div className="text-[10px] text-ink-300">% Gordura</div>
-                              <div className="text-sm font-bold text-lime mt-0.5">{a.body_fat ? `${a.body_fat}%` : "—"}</div>
+                              <div className="text-sm font-bold text-brand mt-0.5">{a.body_fat ? `${a.body_fat}%` : "—"}</div>
                             </div>
                             <div className="p-2.5 rounded-xl bg-ink-750">
                               <div className="text-[10px] text-ink-300">Massa Magra</div>
@@ -1830,7 +1830,7 @@ function ProfessorContent() {
                     <label className="label">Observações da Avaliação</label>
                     <textarea
                       rows={2}
-                      placeholder="Ex: Aluno em fase de perda de gordura, sem dores articulares..."
+                      placeholder="Ex: Aluna em fase de perda de gordura, sem dores articulares..."
                       value={newAssessment.notes}
                       onChange={(e) => setNewAssessment({ ...newAssessment, notes: e.target.value })}
                       className="field"
@@ -1849,7 +1849,7 @@ function ProfessorContent() {
                       type="button"
                       onClick={handleCreateAssessment}
                       disabled={savingAssessment}
-                      className="btn-lime !py-2.5 !px-5 text-xs font-bold"
+                      className="btn-brand !py-2.5 !px-5 text-xs font-bold"
                     >
                       {savingAssessment ? "Salvando..." : "Salvar Avaliação"}
                     </button>

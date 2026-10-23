@@ -36,7 +36,7 @@ export default function Leads({ can }: { can: (...p: Permission[]) => boolean })
   return (
     <div className="space-y-5">
       <PageHead title="Leads" subtitle="Interessados vindos do site, Instagram e recepção"
-        actions={<><button className={mine ? "pill-on" : "pill-off"} onClick={() => setMine(!mine)}>Só os meus</button><button className="btn-lime" onClick={() => setShowNew(true)}><Plus className="w-4 h-4" />Novo lead</button></>} />
+        actions={<><button className={mine ? "pill-on" : "pill-off"} onClick={() => setMine(!mine)}>Só os meus</button><button className="btn-brand" onClick={() => setShowNew(true)}><Plus className="w-4 h-4" />Novo lead</button></>} />
 
       <PillTabs
         tabs={[{ id: "" as "" | LeadStatus, label: `Todos` }, ...STATUS.map((s) => ({ id: s.id as "" | LeadStatus, label: `${s.label}${data?.counts[s.id] ? ` (${data.counts[s.id]})` : ""}` }))]}
@@ -67,7 +67,7 @@ export default function Leads({ can }: { can: (...p: Permission[]) => boolean })
                     <div className="flex gap-2">
                       {wa && <a className="btn-dark px-3 py-2 text-xs" href={wa} target="_blank" rel="noreferrer">WhatsApp</a>}
                       <button className="btn-dark px-3 py-2 text-xs" onClick={() => setEdit(l)}>Detalhes</button>
-                      {l.status !== "MATRICULADA" && l.status !== "PERDIDA" && can("students.manage", "sales.manage") && <button className="btn-lime px-3 py-2 text-xs" onClick={() => setConvert(l)}>Matricular</button>}
+                      {l.status !== "MATRICULADA" && l.status !== "PERDIDA" && can("students.manage", "sales.manage") && <button className="btn-brand px-3 py-2 text-xs" onClick={() => setConvert(l)}>Matricular</button>}
                     </div>
                   </li>
                 );
@@ -89,7 +89,7 @@ function NewLeadModal({ onClose, onDone }: { onClose: () => void; onDone: () => 
   const [f, setF] = useState({ name: "", phone: "", email: "", source: "instagram", message: "" });
   return (
     <Modal title="Novo lead" onClose={onClose} width="max-w-md"
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || f.name.trim().length < 2} onClick={async () => { const r = await run(() => api.createLead(f), "Lead cadastrado"); if (r) { onDone(); onClose(); } }}>Cadastrar</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || f.name.trim().length < 2} onClick={async () => { const r = await run(() => api.createLead(f), "Lead cadastrado"); if (r) { onDone(); onClose(); } }}>Cadastrar</button></>}>
       <Field label="Nome"><input className="field" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus /></Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="WhatsApp"><input className="field" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></Field>
@@ -107,7 +107,7 @@ function LeadModal({ lead, onClose, onDone }: { lead: Lead; onClose: () => void;
   const [notes, setNotes] = useState(lead.notes || "");
   return (
     <Modal title={lead.name} onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Fechar</button><button className="btn-lime" disabled={busy} onClick={async () => { const r = await run(() => api.updateLead(lead.id, { status, notes }), "Lead atualizado"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
+      footer={<><button className="btn-ghost" onClick={onClose}>Fechar</button><button className="btn-brand" disabled={busy} onClick={async () => { const r = await run(() => api.updateLead(lead.id, { status, notes }), "Lead atualizado"); if (r) { onDone(); onClose(); } }}>Salvar</button></>}>
       <div className="text-sm text-ink-200 space-y-1"><div>{lead.phone} {lead.email && `· ${lead.email}`}</div><div className="text-ink-300">Origem: {SOURCES[lead.source] || lead.source} · {dateBR(lead.created_at)}</div>{lead.message && <div>“{lead.message}”</div>}</div>
       <Field label="Situação">
         <div className="flex flex-wrap gap-2">{STATUS.filter((s) => s.id !== "MATRICULADA" || lead.status === "MATRICULADA").map((s) => <button key={s.id} type="button" onClick={() => setStatus(s.id)} className={status === s.id ? "pill-on" : "pill-off"}>{s.label}</button>)}</div>
@@ -123,15 +123,15 @@ function ConvertModal({ lead, sellers, onClose, onDone }: { lead: Lead; sellers:
   const [f, setF] = useState({ email: lead.email, document: "", phone: lead.phone, plan_id: "", due_day: new Date().getDate(), seller_id: lead.assigned_to_id || "" });
   const [creds, setCreds] = useState<{ login: string; pass: string } | null>(null);
   if (creds) return (
-    <Modal title={`${lead.name} matriculado(a)`} onClose={onClose} width="max-w-md" footer={<button className="btn-lime" onClick={onClose}>Concluir</button>}>
-      <p className="text-sm text-ink-200">Primeira mensalidade gerada e venda registrada. Passe o acesso ao aluno:</p>
+    <Modal title={`${lead.name} matriculado(a)`} onClose={onClose} width="max-w-md" footer={<button className="btn-brand" onClick={onClose}>Concluir</button>}>
+      <p className="text-sm text-ink-200">Primeira mensalidade gerada e venda registrada. Passe o acesso à aluna:</p>
       <Credentials login={creds.login} password={creds.pass} />
     </Modal>
   );
   const plan = plans.data?.find((p) => p.plan.id === f.plan_id)?.plan;
   return (
     <Modal title={`Matricular ${lead.name}`} onClose={onClose}
-      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-lime" disabled={busy || !f.plan_id || (!f.email && !f.document)}
+      footer={<><button className="btn-ghost" onClick={onClose}>Cancelar</button><button className="btn-brand" disabled={busy || !f.plan_id || (!f.email && !f.document)}
         onClick={async () => { const r = await run(() => api.convertLead(lead.id, { ...f, seller_id: f.seller_id || null })); if (r) { setCreds({ login: r.login, pass: r.temp_password }); onDone(); } }}>Matricular</button></>}>
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="E-mail"><input className="field" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
@@ -143,7 +143,7 @@ function ConvertModal({ lead, sellers, onClose, onDone }: { lead: Lead; sellers:
         <select className="field" value={f.plan_id} onChange={(e) => setF({ ...f, plan_id: e.target.value })}><option value="">Escolha o plano…</option>{plans.data?.map(({ plan: p }) => <option key={p.id} value={p.id}>{p.name} — {brl(p.price)}</option>)}</select>
       </Field>
       {sellers.length > 0 && <Field label="Vendedor(a) (comissão)"><select className="field" value={f.seller_id} onChange={(e) => setF({ ...f, seller_id: e.target.value })}><option value="">Responsável pelo lead / eu</option>{sellers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>}
-      <p className="text-xs text-ink-400">É preciso e-mail ou CPF para o aluno entrar no app.</p>
+      <p className="text-xs text-ink-400">É preciso e-mail ou CPF para a aluna entrar no app.</p>
     </Modal>
   );
 }

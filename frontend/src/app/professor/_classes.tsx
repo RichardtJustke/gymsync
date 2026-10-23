@@ -7,6 +7,7 @@ import { Avatar, Empty, Modal, Tag } from "@/components/ui";
 import { useAction, useAsync } from "@/lib/hooks";
 import { isoDate, timeBR, WEEKDAYS } from "@/lib/format";
 import type { Booking, ClassSession } from "@/types";
+import { BRAND } from "@/lib/brand";
 
 /** Aulas da professora nos próximos dias + chamada */
 export default function Classes() {
@@ -21,32 +22,39 @@ export default function Classes() {
   }, [data]);
 
   return (
-    <div className="max-w-3xl w-full mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <div className="flex items-end justify-between gap-3">
-        <div><div className="eyebrow mb-1">Minha agenda</div><h1 className="text-3xl font-semibold text-white tracking-tight">Aulas</h1></div>
+        <div><div className="eyebrow mb-1">Minha agenda</div><h1 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">Aulas</h1></div>
         <select className="field w-auto" value={days} onChange={(e) => setDays(Number(e.target.value))} aria-label="Período">
           <option value={1}>Hoje</option><option value={7}>7 dias</option><option value={14}>14 dias</option>
         </select>
       </div>
 
       {error ? <div className="card p-6"><Empty title="Não foi possível carregar">{error}<div className="mt-3"><button className="btn-dark" onClick={reload}>Tentar de novo</button></div></Empty></div>
-        : loading && !data ? <div className="space-y-3"><div className="h-20 rounded-3xl bg-ink-800 animate-pulse" /><div className="h-20 rounded-3xl bg-ink-800 animate-pulse" /></div>
+        : loading && !data ? <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"><div className="h-20 rounded-3xl bg-ink-800 animate-pulse" /><div className="h-20 rounded-3xl bg-ink-800 animate-pulse" /></div>
         : grouped.length === 0 ? <div className="card"><Empty icon={<CalendarDays className="w-6 h-6" />} title="Você não tem aulas neste período" /></div>
         : grouped.map(([day, list]) => (
           <section key={day} className="space-y-2">
             <div className="eyebrow">{WEEKDAYS[new Date(day + "T12:00:00").getDay()]}, {new Date(day + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}{day === isoDate() ? " · hoje" : ""}</div>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {list.map((s) => {
               const past = new Date(s.ends_at) < new Date();
               return (
                 <button key={s.id} onClick={() => setOpen(s)} className="card w-full p-4 flex items-center gap-3 text-left hover:bg-ink-750 transition-colors">
-                  <span className="w-1.5 self-stretch rounded-full" style={{ background: s.modality?.color || "#D7FF3A" }} />
-                  <div className="w-24 text-sm font-semibold text-white">{timeBR(s.starts_at)}–{timeBR(s.ends_at)}</div>
-                  <div className="flex-1 min-w-0"><div className="text-sm text-white truncate">{s.title || s.modality?.name}</div><div className="text-xs text-ink-300">{s.room || "Sem sala"}</div></div>
-                  <span className="text-xs text-ink-300 flex items-center gap-1"><Users className="w-3.5 h-3.5" />{s.booked ?? 0}/{s.capacity}</span>
-                  {s.status === "CANCELADA" ? <Tag tone="mute">Cancelada</Tag> : <Tag tone={past ? "mute" : "ok"}>{past ? "Chamada" : "Lista"}</Tag>}
+                  <span className="w-1.5 self-stretch rounded-full" style={{ background: s.modality?.color || BRAND }} />
+                  <div className="shrink-0 w-12 sm:w-24 leading-tight">
+                    <span className="text-sm font-semibold text-white">{timeBR(s.starts_at)}</span>
+                    <span className="block sm:inline text-xs sm:text-sm text-ink-400 sm:text-white sm:font-semibold"><span className="hidden sm:inline">–</span>{timeBR(s.ends_at)}</span>
+                  </div>
+                  <div className="flex-1 min-w-0"><div className="text-sm text-white truncate">{s.title || s.modality?.name}</div><div className="text-xs text-ink-300 truncate">{s.room || "Sem sala"}</div></div>
+                  <div className="shrink-0 flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-3">
+                    <span className="text-xs text-ink-300 flex items-center gap-1"><Users className="w-3.5 h-3.5" />{s.booked ?? 0}/{s.capacity}</span>
+                    {s.status === "CANCELADA" ? <Tag tone="mute">Cancelada</Tag> : <Tag tone={past ? "mute" : "ok"}>{past ? "Chamada" : "Lista"}</Tag>}
+                  </div>
                 </button>
               );
             })}
+            </div>
           </section>
         ))}
       {open && <Attendance session={open} onClose={() => { setOpen(null); reload(); }} />}

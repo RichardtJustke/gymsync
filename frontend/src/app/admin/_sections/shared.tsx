@@ -47,7 +47,7 @@ export function Credentials({ login, password }: { login: string; password: stri
       <div className="text-ink-300">Login</div>
       <div className="font-mono text-white break-all">{login}</div>
       <div className="text-ink-300 pt-1">Senha provisória (aparece só agora)</div>
-      <div className="font-mono text-lime text-lg tracking-wider select-all">{password}</div>
+      <div className="font-mono text-brand text-lg tracking-wider select-all">{password}</div>
       <button className="btn-dark w-full mt-1" onClick={() => navigator.clipboard?.writeText(`Login: ${login}\nSenha provisória: ${password}`)}>
         Copiar login e senha
       </button>

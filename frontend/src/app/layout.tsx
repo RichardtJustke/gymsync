@@ -33,8 +33,8 @@ export const metadata: Metadata = {
     title: "GymSync",
   },
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: "/logo-192.png",
+    apple: "/logo-192.png",
   },
 };
 
