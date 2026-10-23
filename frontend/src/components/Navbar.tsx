@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui";
 import { useTheme } from "@/context/ThemeContext";
 import { useSession } from "@/lib/session";
 import { dateTimeBR, ROLE_LABEL } from "@/lib/format";
+import { asset } from "@/lib/paths";
 import type { Notification } from "@/types";
 
 export default function Navbar() {
@@ -81,7 +82,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto h-14 sm:h-16 pl-2 sm:pl-3 pr-1.5 sm:pr-2 flex items-center justify-between rounded-full bg-ink-850/80 backdrop-blur-xl border border-white/[0.05]">
         <div className="flex items-center gap-6">
           <Link href={user ? links[0]?.href || "/" : "/"} className="flex items-center gap-2.5 group">
-            <img src="/logo-192.png" alt="" className="w-9 h-9 sm:w-10 sm:h-10 rounded-full group-hover:shadow-glow transition-shadow" />
+            <img src={asset("/logo-192.png")} alt="" className="w-9 h-9 sm:w-10 sm:h-10 rounded-full group-hover:shadow-glow transition-shadow" />
             <span className="font-bold text-base sm:text-lg tracking-tight text-white">
               {user?.gym?.name?.split(" ")[0] || "Unika"}<span className="text-brand">.</span>
             </span>

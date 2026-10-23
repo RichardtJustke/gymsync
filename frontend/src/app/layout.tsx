@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import { asset } from "@/lib/paths";
 import Navbar from "@/components/Navbar";
 import FirstAccessGate from "@/components/FirstAccessGate";
 import PushRegistrar from "@/components/PushRegistrar";
@@ -26,15 +27,15 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Unika GymSync — Seu Treino Inteligente",
   description: "Treinos, fichas, evolução corporal e check-in na palma da sua mão.",
-  manifest: "/manifest.json",
+  manifest: asset("/manifest.json"),
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "GymSync",
   },
   icons: {
-    icon: "/logo-192.png",
-    apple: "/logo-192.png",
+    icon: asset("/logo-192.png"),
+    apple: asset("/logo-192.png"),
   },
 };
 
@@ -46,15 +47,15 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={manrope.variable}>
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href={asset("/manifest.json")} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator && window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+              if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function() {});
+                  navigator.serviceWorker.register('${asset("/sw.js")}', { scope: '${asset("/")}' }).catch(function() {});
                 });
               }
             `,

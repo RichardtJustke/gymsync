@@ -1,10 +1,12 @@
 // Service Worker para GymSync PWA
-const CACHE_NAME = 'gymsync-v1';
+// Funciona tanto na raiz (servidor) quanto em subpath (GitHub Pages).
+const CACHE_NAME = 'gymsync-v2';
+const BASE = new URL('./', self.location.href).pathname;
 const STATIC_ASSETS = [
-  '/',
-  '/aluno',
-  '/manifest.json',
-  '/icon.svg'
+  BASE,
+  `${BASE}aluno/`,
+  `${BASE}manifest.json`,
+  `${BASE}logo-192.png`,
 ];
 
 self.addEventListener('install', (event) => {
@@ -49,7 +51,7 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       }).catch(() => {
         // Fallback offline
-        return caches.match('/aluno');
+        return caches.match(`${BASE}aluno/`);
       });
     })
   );

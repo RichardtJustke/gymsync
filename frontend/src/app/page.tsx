@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { api, homeFor, loadSession } from "@/services/api";
 import { IMG } from "@/lib/images";
+import { asset } from "@/lib/paths";
 
 const HEROES = [
   { src: IMG.kettlebell, alt: "Professora orientando aluna no treino" },
@@ -285,7 +286,7 @@ export default function HomePage() {
                 <div className="relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/logo-192.png"
+                    src={asset("/logo-192.png")}
                     alt={`Logo ${gymName}`}
                     className="h-10 w-10 rounded-[14px] shadow-[0_8px_24px_rgba(0,0,0,0.5)] ring-1 ring-white/25"
                   />
